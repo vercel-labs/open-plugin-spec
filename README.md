@@ -39,7 +39,7 @@ Greet the user. If `$ARGUMENTS` is present, include it in the greeting.
 A host that supports skills can load this plugin by reading `.plugin/plugin.json`, discovering `skills/greet/SKILL.md`, and surfacing `/hello-plugin:greet`.
 
 > **Note:**
-> The Core Profile reading path in this document is package layout (§4), manifest loading (§5–6), discovery (§7), skills and MCP servers (§8), namespacing (§9), `${PLUGIN_ROOT}` expansion (§10), and minimum host conformance (§12). Commands, agents, rules, hooks, LSP servers, and output styles are optional extended component types defined in Appendix E.
+> The Core Profile reading path in this document is package layout (§4), manifest loading (§5–6), discovery (§7), skills and MCP servers (§8), namespacing (§9), `${PLUGIN_ROOT}` expansion (§10), and minimum host conformance (§12). Commands, agents, rules, hooks, LSP servers, and output styles are optional extended component types defined in Appendix D.
 
 ## Table of contents
 
@@ -60,9 +60,8 @@ A host that supports skills can load this plugin by reading `.plugin/plugin.json
 
 - [Appendix A: Conformance Checklist](#appendix-a-conformance-checklist)
 - [Appendix B: Marketplace Index and Discovery](#appendix-b-marketplace-index-and-discovery)
-- [Appendix C: User Configuration](#appendix-c-user-configuration)
-- [Appendix D: Extended Hook Events](#appendix-d-extended-hook-events)
-- [Appendix E: Extended Component Types](#appendix-e-extended-component-types)
+- [Appendix C: Extended Hook Events](#appendix-c-extended-hook-events)
+- [Appendix D: Extended Component Types](#appendix-d-extended-component-types)
 - [Design Decisions](#design-decisions)
 - [Future Considerations](#future-considerations)
 
@@ -276,16 +275,7 @@ The manifest MUST be JSON and MUST contain a top-level object.
   "hooks": "./config/hooks.json",
   "mcpServers": "./mcp-config.json",
   "lspServers": "./.lsp.json",
-  "outputStyles": "./styles/",
-  "userConfig": {
-    "api_key": {
-      "description": "API key for the backend service",
-      "sensitive": true
-    },
-    "output_format": {
-      "description": "Preferred output format (json or text)"
-    }
-  }
+  "outputStyles": "./styles/"
 }
 ```
 
@@ -348,7 +338,7 @@ Core component path fields:
 | `skills`       | string \| string[] \| object | Skill directories, or a path config.                       |
 | `mcpServers`   | string \| string[] \| object | MCP config paths, a path config, or inline MCP config.     |
 
-Hosts MAY support additional component path fields for extended component types. See [Appendix E: Extended Component Types](#appendix-e-extended-component-types) for details.
+Hosts MAY support additional component path fields for extended component types. See [Appendix D: Extended Component Types](#appendix-d-extended-component-types) for details.
 
 When the manifest declares paths for a component type, those paths control discovery for that type. The default location is not scanned unless the manifest explicitly includes it.
 
@@ -389,7 +379,7 @@ Hosts MUST interpret object values for component path fields as follows:
 | `mcpServers`   | Object containing `mcpServers`                       | Inline MCP config.  |
 | Any path field | Object containing `paths`                            | Path config.        |
 
-Hosts that support extended component types (see [Appendix E](#appendix-e-extended-component-types)) MAY define additional object shapes for those fields (e.g., inline hook config, inline LSP config).
+Hosts that support extended component types (see [Appendix D](#appendix-d-extended-component-types)) MAY define additional object shapes for those fields (e.g., inline hook config, inline LSP config).
 
 If an object matches none of the shapes above, or matches more than one shape, the host SHOULD treat the field as invalid and SHOULD warn.
 
@@ -457,10 +447,6 @@ Valid names: `my-plugin`, `acme.tools`, `lint3r`, `a`
 
 Invalid names: `My-Plugin` (uppercase), `-start` (leading hyphen), `has--double` (consecutive hyphens), `too.many..dots` (consecutive periods), `` (empty)
 
-### 6.8 User configuration
-
-*User configuration is still under discussion and not required for v1 conformance. See [Appendix C: User Configuration](#appendix-c-user-configuration) for the current draft. Hosts MAY implement `userConfig` but conformant hosts are not required to.*
-
 ## 7. Component discovery
 
 > **See also:** [§4 Plugin package model](#4-plugin-package-model) for directory layout conventions, [§6 Manifest schema](#6-manifest-schema) for how manifest fields declare discovery paths, and [§9 Namespacing](#9-namespacing) for how discovered components are named.
@@ -476,7 +462,7 @@ Core component locations:
 | Skills        | `skills/`          | Subdirectories containing `SKILL.md` |
 | MCP servers   | `.mcp.json`        | JSON configuration                   |
 
-Hosts MAY support extended component types with their own default locations. See [Appendix E: Extended Component Types](#appendix-e-extended-component-types) for details.
+Hosts MAY support extended component types with their own default locations. See [Appendix D: Extended Component Types](#appendix-d-extended-component-types) for details.
 
 Example: given a plugin `reports-plugin` with this layout:
 
@@ -497,23 +483,7 @@ The host discovers skill `summarize` and MCP servers from `.mcp.json` — all fr
 
 Example: a plugin declares `"skills": "./custom-skills/"` but has no `skills/` directory. The host scans only `custom-skills/` and does not error on the missing default `skills/` path.
 
-### 7.3 Root `SKILL.md` fallback
-
-If a plugin has no `skills/` directory and no manifest `skills` field, a host MAY treat `SKILL.md` at the plugin root as a single Agent Skill. In that case, the skill name MUST be derived from the plugin name.
-
-> **Note:** Not all hosts implement the root `SKILL.md` fallback. Claude Code, for example, requires skills to be in `skills/` subdirectories. Plugin authors targeting multiple hosts SHOULD use the standard `skills/` directory layout.
-
-Example:
-
-```text
-solo-skill/
-├── .plugin/plugin.json
-└── SKILL.md
-```
-
-If there is no `skills/` directory and no manifest `skills` field, a host MAY surface the root skill as `/solo-skill:solo-skill`.
-
-### 7.4 Discovery examples
+### 7.3 Discovery examples
 
 Example: default discovery only
 
@@ -562,7 +532,7 @@ The host discovers both `/reports-plugin:summarize` and `/reports-plugin:deploy`
 
 > **See also:** [§7 Component discovery](#7-component-discovery) for how component files are located, and [§9 Namespacing](#9-namespacing) for how component names are surfaced to users and models.
 
-This specification normatively defines discovery for two component types that are backed by open standards: **skills** and **MCP servers**. Hosts MAY support additional component types (commands, agents, rules, hooks, LSP servers, output styles). See [Appendix E: Extended Component Types](#appendix-e-extended-component-types) for reference definitions of these additional types.
+This specification normatively defines discovery for two component types that are backed by open standards: **skills** and **MCP servers**. Hosts MAY support additional component types (commands, agents, rules, hooks, LSP servers, output styles). See [Appendix D: Extended Component Types](#appendix-d-extended-component-types) for reference definitions of these additional types.
 
 Hosts MUST ignore component types they do not support.
 
@@ -713,8 +683,6 @@ PLUGIN_ROOT=/home/alex/.agents/plugins/devtools
 PLUGIN_DATA=/home/alex/.agents/plugins/data/devtools
 ```
 
-Hosts MAY additionally provide vendor-prefixed equivalents (e.g., `CLAUDE_PLUGIN_ROOT`) but these are host-specific and not defined by this spec.
-
 ### 10.2 Placeholder expansion
 
 Hosts that provide `PLUGIN_ROOT` MUST expand `${PLUGIN_ROOT}` in supported configuration fields. Hosts that provide a persistent data directory SHOULD expand `${PLUGIN_DATA}`.
@@ -784,7 +752,7 @@ Example: a skills-only host is conformant. It only needs to:
 
 A host that only supports skills — and ignores MCP servers, commands, agents, rules, hooks, LSP servers, and output styles — is fully conformant to Open Plugin v1 as long as it meets all six requirements above.
 
-Support for extended component types (commands, agents, rules, hooks, LSP servers, output styles) is OPTIONAL. See [Appendix E: Extended Component Types](#appendix-e-extended-component-types).
+Support for extended component types (commands, agents, rules, hooks, LSP servers, output styles) is OPTIONAL. See [Appendix D: Extended Component Types](#appendix-d-extended-component-types).
 
 ### 12.2 Incremental adoption
 
@@ -1064,56 +1032,9 @@ If no marketplace index is found, hosts should check whether the root directory 
 
 ---
 
-## Appendix C: User Configuration
+## Appendix C: Extended Hook Events
 
-*This appendix is not required for v1 conformance. It describes a user configuration mechanism implemented by some hosts. Hosts MAY implement `userConfig`. A future version of the spec may promote this to a required section.*
-
-### C.1 Schema
-
-The optional `userConfig` manifest field allows plugins to declare user-configurable values that the host prompts for when the plugin is enabled.
-
-Each key in `userConfig` maps to a config descriptor:
-
-| Field         | Type    | Description                                                                                       |
-| ------------- | ------- | ------------------------------------------------------------------------------------------------- |
-| `description` | string  | Required human-readable description of the configuration value.                                   |
-| `sensitive`   | boolean | If `true`, the host should store this value securely (e.g., system keychain). Defaults to `false`. |
-
-Configuration keys must be valid identifiers (alphanumeric characters and underscores).
-
-Example:
-
-```json
-{
-  "userConfig": {
-    "api_key": {
-      "description": "API key for the backend service",
-      "sensitive": true
-    },
-    "output_format": {
-      "description": "Preferred output format (json or text)"
-    }
-  }
-}
-```
-
-### C.2 Value substitution
-
-User config values are available as `${user_config.KEY}` placeholders in MCP/LSP server configurations, hook commands, and (for non-sensitive values only) skill and agent content.
-
-### C.3 Environment variable export
-
-Hosts should export user config values to plugin subprocesses as environment variables using the pattern `PLUGIN_OPTION_<KEY>`. Hosts may additionally export vendor-prefixed equivalents such as `CLAUDE_PLUGIN_OPTION_<KEY>`.
-
-### C.4 Storage
-
-Non-sensitive values should be stored in the host's settings file. Sensitive values should be stored in a secure credential store (e.g., system keychain).
-
----
-
-## Appendix D: Extended Hook Events
-
-*This appendix is not required for v1 conformance. It catalogs hook events implemented by existing hosts. Hosts MAY support any subset of these. Plugin authors should check host documentation for supported events. See [Appendix E.4](#e4-hooks) for the hook format definition.*
+*This appendix is not required for v1 conformance. It catalogs hook events implemented by existing hosts. Hosts MAY support any subset of these. Plugin authors should check host documentation for supported events. See [Appendix D.4](#d4-hooks) for the hook format definition.*
 
 | Event                | Matcher context   | Description                                       | Known hosts  |
 | -------------------- | ----------------- | ------------------------------------------------- | ------------ |
@@ -1142,11 +1063,11 @@ As additional hosts adopt the Open Plugin format, this table will be updated wit
 
 ---
 
-## Appendix E: Extended Component Types
+## Appendix D: Extended Component Types
 
 *This appendix is not required for v1 conformance. It defines component types that hosts MAY support beyond the core skill and MCP server types. These formats are based on conventions established by existing hosts but are not yet backed by independent open standards. A future version of the spec may promote some of these to core component types.*
 
-### E.1 Command skills
+### D.1 Command skills
 
 Command skills are markdown files discovered from `commands/`.
 
@@ -1160,7 +1081,7 @@ Command skills are markdown files discovered from `commands/`.
 
 The markdown body is the command instruction body. The placeholder `$ARGUMENTS` in a command body is replaced with user-provided text after the command name.
 
-### E.2 Agents
+### D.2 Agents
 
 Agent definitions are markdown files with YAML frontmatter discovered from `agents/`.
 
@@ -1171,7 +1092,7 @@ Agent definitions are markdown files with YAML frontmatter discovered from `agen
 
 The markdown body after frontmatter is the agent system prompt.
 
-### E.3 Rules
+### D.3 Rules
 
 Rule files are markdown with YAML frontmatter discovered from `rules/`. The default extension is `.mdc`.
 
@@ -1183,7 +1104,7 @@ Rule files are markdown with YAML frontmatter discovered from `rules/`. The defa
 
 The markdown body is the rule text injected when the rule is active.
 
-### E.4 Hooks
+### D.4 Hooks
 
 The default hook configuration path is `hooks/hooks.json`. Hooks MAY also be declared inline in the manifest `hooks` field.
 
@@ -1194,11 +1115,11 @@ The hook configuration contains a top-level `hooks` object. Each event key maps 
 | `matcher` | string | Optional regular expression matched against event-specific context. |
 | `hooks`   | array  | Required list of hook actions.                                      |
 
-Core hook events: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SessionStart`, `SessionEnd`. See [Appendix D: Extended Hook Events](#appendix-d-extended-hook-events) for additional events.
+Core hook events: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SessionStart`, `SessionEnd`. See [Appendix C: Extended Hook Events](#appendix-c-extended-hook-events) for additional events.
 
 Hook action types: `command` (shell command), `http` (POST to URL), `prompt` (LLM evaluation), `agent` (agentic verifier).
 
-### E.5 LSP servers
+### D.5 LSP servers
 
 The default LSP configuration path is `.lsp.json`. LSP servers MAY also be declared inline in the manifest `lspServers` field. The top-level object uses direct server-name keys.
 
@@ -1206,6 +1127,6 @@ Required fields: `command` (executable on `$PATH`), `extensionToLanguage` (file 
 
 Optional fields: `args`, `transport`, `env`, `initializationOptions`, `settings`, `workspaceFolder`, `startupTimeout`, `shutdownTimeout`, `restartOnCrash`, `maxRestarts`.
 
-### E.6 Output styles
+### D.6 Output styles
 
 `outputStyles` is a discovery field for host-defined output style resources. This specification does not define output style runtime semantics beyond discovery.
