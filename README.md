@@ -69,19 +69,7 @@ Plugin hosts and plugin packages claiming conformance to Open Plugin v1 MUST imp
 
 ### 1.1 Governance model
 
-Open Plugin is intended to be governed as a collaborative open standard, not as a single-vendor format. The initial governance model should be defined before the first ratified release and SHOULD use the Open Responses governance structure as a starting point.
-
-The governance process should define:
-
-1. A steering committee with one primary representative per participating implementation or vendor.
-2. A lightweight quorum and voting process for accepting changes to the core specification.
-3. A process for promoting widely adopted client extensions into the core specification.
-4. A shared collaboration space for implementers, initially kept small enough to move quickly.
-5. Neutral stewardship of public assets such as `openplugins.org` once the committee is formed.
-
-Client-specific experimentation is expected. The committee's role is to identify extensions that have proven useful across implementations and decide when they should become portable core behavior.
-
-The Project's governance rules are defined in the [Technical Charter](./GOVERNANCE.md).
+Open Plugin project governance is defined separately from the portable package format in the [Technical Charter](./GOVERNANCE.md).
 
 ## 2. Conformance language
 
