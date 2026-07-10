@@ -500,7 +500,7 @@ Hosts MAY use `version` to determine whether updates are available and whether c
 
 ### 11.1 Minimum host requirements
 
-A host is conformant to Open Plugin v1 if it:
+A conformant host MUST satisfy all applicable requirements in sections 1–10. At minimum, it:
 
 1. Can load a plugin from a directory path.
 2. Parses and validates the closed `plugin.json` schema.
@@ -513,20 +513,9 @@ A host is conformant to Open Plugin v1 if it:
 
 Client-specific behavior MUST be represented under `.<client>/`, not in root `plugin.json`. This preserves one strict portable manifest while allowing clients to experiment independently.
 
-Example: a skills-only host is conformant. It only needs to:
-
-```text
-1. Accept a plugin directory path.
-2. Read and validate `plugin.json`.
-3. Ignore unsupported client extension directories.
-4. Scan `skills/` for `SKILL.md` files.
-```
-
-A host that only supports skills and ignores MCP servers is fully conformant to Open Plugin v1 as long as it meets all eight requirements above.
-
 ### 11.2 Incremental adoption
 
-A host is not required to support every component type. Incremental adoption is conformant.
+A host is not required to support every core component type. For example, a skills-only host can conform without supporting MCP servers, provided it satisfies all applicable requirements.
 
 ### 11.3 Unsupported components and failures
 
