@@ -396,6 +396,8 @@ The host discovers skill `summarize` from `skills/` and MCP servers from `mcp.js
 
 If a fixed component location is absent, the host MUST NOT treat that as an error.
 
+If a fixed component location is present but does not resolve to the expected filesystem kind — for example, `skills` does not resolve to a directory or `mcp.json` does not resolve to a regular file — the host MUST treat that component type as invalid and continue loading other supported component types.
+
 ## 8. Component definitions
 
 > **See also:** [§7 Component discovery](#7-component-discovery) for how component files are located, and [§9 Namespacing](#9-namespacing) for how component names are surfaced to users and models.
@@ -410,7 +412,9 @@ Agent Skills MUST conform to the [Agent Skills specification](https://agentskill
 
 This specification defines how Agent Skills are *discovered* and *namespaced* within a plugin, not the skill format itself.
 
-The fixed discovery location is `skills/`. Each subdirectory containing `SKILL.md` is treated as one skill.
+The fixed discovery location is `skills/`. Each immediate child directory containing a path named exactly `SKILL.md` that resolves to a regular file is treated as one skill. Hosts MUST NOT recursively search deeper descendants for additional skills.
+
+If a discovered skill does not conform to the Agent Skills specification, the host MUST skip that skill and continue loading other skills and component types. The host SHOULD report the invalid skill.
 
 Example: a skill directory named `deploy` inside `skills/`:
 
@@ -465,7 +469,9 @@ Example: `mcp.json`
 #### 8.2.2 Loading rules
 
 1. Hosts that support MCP servers MUST load configuration only from `mcp.json` at the plugin root.
-2. If a server fails to start, the host SHOULD log the error and continue loading other components.
+2. If `mcp.json` is not valid JSON, does not contain a top-level object, or does not contain the required `mcpServers` object, the host MUST disable MCP for that plugin and continue loading other component types. The host SHOULD report the invalid configuration.
+3. If an individual server entry does not satisfy the requirements in §8.2.1, the host MUST skip that server and continue loading other servers and component types. The host SHOULD report the invalid entry.
+4. If a server fails to start, the host MUST continue loading other servers and component types. The host SHOULD report the startup failure.
 
 ## 9. Namespacing
 
@@ -606,8 +612,9 @@ A host is not required to support every component type. Incremental adoption is 
 ### 12.3 Unsupported components and failures
 
 1. Hosts MUST ignore unsupported component types.
-2. Hosts MUST continue loading a plugin when a component fails independently, such as an MCP server startup failure.
-3. Hosts SHOULD warn when configuration is invalid, conflicting, or partially unsupported.
+2. An invalid `plugin.json` is fatal to the plugin. As required by §6, the host MUST reject the plugin and MUST NOT discover or execute any of its components.
+3. A failure isolated to a component type, component entry, or component process MUST NOT prevent the host from loading independently valid components. Hosts MUST apply the failure behavior defined for that component in §7 and §8.
+4. Hosts SHOULD report invalid configuration and component failures. Hosts MAY report partially unsupported plugins, but lack of support for a component type is not itself an error.
 
 ---
 
