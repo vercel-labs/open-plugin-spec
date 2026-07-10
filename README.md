@@ -2,7 +2,7 @@
 
 **Spec Version: 1.0.0**
 
-This document defines the canonical Open Plugin Specification v1.0.0. It is a self-contained specification for packaging agent extensions into distributable plugins. Everything in sections 1–12 is required for conformance.
+This document defines the canonical Open Plugin Specification v1.0.0. It is a self-contained specification for packaging agent extensions into distributable plugins. Everything in sections 1–11 is required for conformance.
 
 ## Quick Start (for context only — not required for conformance)
 
@@ -33,10 +33,10 @@ name: greet
 description: Greet the user and offer help.
 ---
 
-Greet the user. If `$ARGUMENTS` is present, include it in the greeting.
+Greet the user and offer help.
 ```
 
-A host that supports skills can load this plugin by reading `plugin.json`, discovering `skills/greet/SKILL.md`, and surfacing `/hello-plugin:greet`.
+A host that supports skills can load this plugin by reading `plugin.json` and discovering `skills/greet/SKILL.md`. How the host exposes the skill to users or models is outside this specification.
 
 > **Note:**
 > Open Plugin v1 standardizes two component types: Agent Skills and MCP servers. Other capabilities are outside the portable v1 format.
@@ -51,10 +51,9 @@ A host that supports skills can load this plugin by reading `plugin.json`, disco
 6. [Manifest schema](#6-manifest-schema)
 7. [Component discovery](#7-component-discovery)
 8. [Component definitions](#8-component-definitions)
-9. [Namespacing](#9-namespacing)
-10. [Environment variables and placeholder expansion](#10-environment-variables-and-placeholder-expansion)
-11. [Versioning](#11-versioning)
-12. [Host conformance](#12-host-conformance)
+9. [Environment variables and placeholder expansion](#9-environment-variables-and-placeholder-expansion)
+10. [Versioning](#10-versioning)
+11. [Host conformance](#11-host-conformance)
 
 **Appendices (not required for conformance)**
 
@@ -86,7 +85,7 @@ The Project's governance rules are defined in the [Technical Charter](./GOVERNAN
 
 ## 2. Conformance language
 
-The key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL in sections 1–12 of this document are to be interpreted as described in RFC 2119 and RFC 8174 when, and only when, they appear in all capitals. Appendices and other non-normative sections use these terms informally.
+The key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY, and OPTIONAL in sections 1–11 of this document are to be interpreted as described in RFC 2119 and RFC 8174 when, and only when, they appear in all capitals. Appendices and other non-normative sections use these terms informally.
 
 ## 3. Terminology
 
@@ -136,7 +135,7 @@ Example: valid and invalid relative paths
 
 The first example is valid — both paths start with `./` and stay within the plugin root. The second is invalid — `../bin/server` escapes the plugin root and `data` is not a plugin-relative path.
 
-These containment rules govern access to files supplied by the plugin package. They do not sandbox a plugin subprocess or restrict paths supplied at runtime, including the host-managed `PLUGIN_DATA` directory defined in §10.1.1.
+These containment rules govern access to files supplied by the plugin package. They do not sandbox a plugin subprocess or restrict paths supplied at runtime, including the host-managed `PLUGIN_DATA` directory defined in §9.1.1.
 
 ### 4.2 Standard layout
 
@@ -220,7 +219,7 @@ my-plugin/
 
 A host loads and validates root `plugin.json` before discovering components or applying client-specific behavior.
 
-> **See also:** [§6 Manifest schema](#6-manifest-schema) for the structure of the manifest file, and [§12 Host conformance](#12-host-conformance) for requirements around supporting `plugin.json`.
+> **See also:** [§6 Manifest schema](#6-manifest-schema) for the structure of the manifest file, and [§11 Host conformance](#11-host-conformance) for requirements around supporting `plugin.json`.
 
 ### 5.2 Client extension directories
 
@@ -294,7 +293,7 @@ Example: full manifest
 | Field  | Type   | Description                                                      |
 | ------ | ------ | ---------------------------------------------------------------- |
 | `id`   | string | Durable plugin identifier. SHOULD be a URL for the canonical plugin location. |
-| `name` | string | Human-readable plugin identifier used for namespacing and settings keys. |
+| `name` | string | Human-readable plugin identifier. |
 
 The `id` value MUST be non-empty. If `id` or `name` is missing, has the wrong type, is empty, or otherwise violates its requirements, the manifest is invalid. Hosts MUST reject the plugin and MUST NOT discover or execute any of its components. Hosts SHOULD report which required field is invalid.
 
@@ -351,7 +350,7 @@ Invalid names: `My-Plugin` (uppercase), `-start` (leading hyphen), `has--double`
 
 ## 7. Component discovery
 
-> **See also:** [§4 Plugin package model](#4-plugin-package-model) for directory layout conventions, and [§9 Namespacing](#9-namespacing) for how discovered components are named.
+> **See also:** [§4 Plugin package model](#4-plugin-package-model) for directory layout conventions.
 
 ### 7.1 Fixed locations
 
@@ -383,7 +382,7 @@ If a fixed component location is present but does not resolve to the expected fi
 
 ## 8. Component definitions
 
-> **See also:** [§7 Component discovery](#7-component-discovery) for how component files are located, and [§9 Namespacing](#9-namespacing) for how component names are surfaced to users and models.
+> **See also:** [§7 Component discovery](#7-component-discovery) for how component files are located.
 
 Open Plugin v1 defines exactly two portable component types: **skills** and **MCP servers**. Other capabilities are outside the v1 format and do not affect conformance.
 
@@ -393,7 +392,7 @@ Hosts MUST ignore component types they do not support.
 
 Agent Skills MUST conform to the [Agent Skills specification](https://agentskills.io/specification). That specification is the source of truth for the `SKILL.md` format, frontmatter fields, and directory layout (`scripts/`, `references/`, `assets/`).
 
-This specification defines how Agent Skills are *discovered* and *namespaced* within a plugin, not the skill format itself.
+This specification defines how Agent Skills are *discovered* within a plugin, not the skill format itself or how hosts expose skills to users or models.
 
 The fixed discovery location is `skills/`. Each immediate child directory containing a path named exactly `SKILL.md` that resolves to a regular file is treated as one skill. Hosts MUST NOT recursively search deeper descendants for additional skills.
 
@@ -456,42 +455,11 @@ Example: `mcp.json`
 3. If an individual server entry does not satisfy the requirements in §8.2.1, the host MUST skip that server and continue loading other servers and component types. The host SHOULD report the invalid entry.
 4. If a server fails to start, the host MUST continue loading other servers and component types. The host SHOULD report the startup failure.
 
-## 9. Namespacing
-
-> **See also:** [§6.4 Plugin name constraints](#64-plugin-name-constraints) for allowed characters in plugin names, and [§8 Component definitions](#8-component-definitions) for the naming rules of each component type.
-
-### 9.1 General component namespacing
-
-Hosts SHOULD namespace plugin-provided components to avoid collisions. The RECOMMENDED format is:
-
-```text
-{plugin-name}:{component-name}
-```
-
-Example:
-
-```text
-deploy-tools:status
-```
-
-### 9.2 MCP tool identifier namespacing
-
-MCP tool identifiers surfaced by a host are outside the Open Plugin package format and are not part of plugin or host conformance.
-
-Implementer note: A host that aggregates tools from multiple MCP servers may encounter duplicate tool names. The host should use a deterministic disambiguation strategy and retain an unambiguous mapping from each surfaced identifier to the originating plugin, server, and tool. Any transformed identifier should satisfy the tool-name constraints of the MCP version implemented by the host.
-
-Example: component namespacing
-
-| Source file | Component name | Surfaced identifier |
-| --- | --- | --- |
-| `skills/code-review/SKILL.md` | `code-review` | `devtools:code-review` |
-| `skills/deploy/SKILL.md` | `deploy` | `devtools:deploy` |
-
-## 10. Environment variables and placeholder expansion
+## 9. Environment variables and placeholder expansion
 
 > **See also:** [§8.2 MCP servers](#82-mcp-servers) for the fields where plugin variable expansion applies, and [§4.1 General requirements](#41-general-requirements) for path safety rules.
 
-### 10.1 Required variables
+### 9.1 Required variables
 
 Hosts that launch plugin subprocesses (i.e., MCP servers) MUST provide an environment variable containing the absolute plugin root path.
 
@@ -499,7 +467,7 @@ Hosts that launch plugin subprocesses (i.e., MCP servers) MUST provide an enviro
 | ------------- | ----------------------- | ---------------------------------------------------------- |
 | `PLUGIN_ROOT` | Absolute plugin root path | REQUIRED for hosts that launch plugin subprocesses. |
 
-### 10.1.1 Persistent data directory
+### 9.1.1 Persistent data directory
 
 Hosts that launch plugin subprocesses MUST provide a dedicated writable data directory for each installed plugin instance and expose its absolute path through `PLUGIN_DATA`.
 
@@ -518,7 +486,7 @@ PLUGIN_ROOT=/home/alex/.agents/plugins/devtools
 PLUGIN_DATA=/home/alex/.agents/plugins/data/devtools
 ```
 
-### 10.2 Placeholder expansion
+### 9.2 Placeholder expansion
 
 Hosts that launch plugin subprocesses MUST expand `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in supported configuration fields. Expansion is a single, non-recursive textual replacement of every exact occurrence of either placeholder. Text introduced by a replacement MUST NOT be scanned for further placeholders.
 
@@ -551,7 +519,7 @@ Example: plugin variable expansion in MCP
 }
 ```
 
-## 11. Versioning
+## 10. Versioning
 
 Plugins SHOULD use Semantic Versioning for `version`.
 
@@ -563,9 +531,9 @@ Plugins SHOULD use Semantic Versioning for `version`.
 
 Hosts MAY use `version` to determine whether updates are available and whether caches are stale.
 
-## 12. Host conformance
+## 11. Host conformance
 
-### 12.1 Minimum host requirements
+### 11.1 Minimum host requirements
 
 A host is conformant to Open Plugin v1 if it:
 
@@ -590,11 +558,11 @@ Example: a skills-only host is conformant. It only needs to:
 
 A host that only supports skills and ignores MCP servers is fully conformant to Open Plugin v1 as long as it meets all seven requirements above.
 
-### 12.2 Incremental adoption
+### 11.2 Incremental adoption
 
 A host is not required to support every component type. Incremental adoption is conformant.
 
-### 12.3 Unsupported components and failures
+### 11.3 Unsupported components and failures
 
 1. Hosts MUST ignore unsupported component types.
 2. An invalid `plugin.json` is fatal to the plugin. As required by §6, the host MUST reject the plugin and MUST NOT discover or execute any of its components.
@@ -621,23 +589,19 @@ A host is not required to support every component type. Incremental adoption is 
 - [ ] Scan the fixed location for each supported component type ([§7.1](#71-fixed-locations))
 - [ ] Ignore missing fixed locations without error ([§7.2](#72-missing-locations))
 
-### Namespacing
-
-- [ ] SHOULD namespace components as `{plugin-name}:{component-name}` ([§9.1](#91-general-component-namespacing))
-
 ### Environment and expansion
 
-- [ ] If the host launches plugin subprocesses, provide `PLUGIN_ROOT` environment variable ([§10.1](#101-required-variables))
-- [ ] If the host launches plugin subprocesses, provide a dedicated writable `PLUGIN_DATA` directory ([§10.1.1](#1011-persistent-data-directory))
+- [ ] If the host launches plugin subprocesses, provide `PLUGIN_ROOT` environment variable ([§9.1](#91-required-variables))
+- [ ] If the host launches plugin subprocesses, provide a dedicated writable `PLUGIN_DATA` directory ([§9.1.1](#911-persistent-data-directory))
 - [ ] Resolve MCP server `command` as a single bare or plugin-relative executable token ([§8.2.1](#821-discovery-and-configuration))
 - [ ] Use the plugin root as the default MCP server working directory ([§8.2.1](#821-discovery-and-configuration))
-- [ ] Expand `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in MCP server `args`, `env`, and `cwd` fields ([§10.2](#102-placeholder-expansion))
+- [ ] Expand `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in MCP server `args`, `env`, and `cwd` fields ([§9.2](#92-placeholder-expansion))
 
 ### Resilience
 
-- [ ] Ignore unsupported component types ([§12.3](#123-unsupported-components-and-failures))
-- [ ] Continue loading when an independent component fails ([§12.3](#123-unsupported-components-and-failures))
-- [ ] Support at least one core component type ([§12.1](#121-minimum-host-requirements))
+- [ ] Ignore unsupported component types ([§11.3](#113-unsupported-components-and-failures))
+- [ ] Continue loading when an independent component fails ([§11.3](#113-unsupported-components-and-failures))
+- [ ] Support at least one core component type ([§11.1](#111-minimum-host-requirements))
 
 ### Diagnostics matrix
 
@@ -650,7 +614,7 @@ A host is not required to support every component type. Incremental adoption is 
 | Unknown manifest field | Hosts MUST reject a plugin whose root manifest contains a field outside the closed schema ([§6.1](#61-manifest-object)) | `ERROR open-plugin: manifest field "openai" is not permitted; plugin rejected` | `{"level":"error","event":"open_plugin.manifest.unknown_field","field":"openai","action":"rejected"}` | Yes | Check that no plugin components are discovered or executed |
 | Missing or invalid required field | Hosts MUST reject a plugin whose `id` or `name` is missing or invalid and MUST NOT discover or execute its components ([§6.2](#62-required-fields)) | `ERROR open-plugin: manifest is invalid: required field "id" is missing; plugin rejected` | `{"level":"error","event":"open_plugin.manifest.invalid_required_field","field":"id","reason":"missing","action":"rejected"}` | Yes | Check that no plugin components are discovered or executed |
 | MCP server startup failure | If a server fails to start, the host SHOULD log the error and continue loading other components ([§8.2.2](#822-loading-rules)) | `ERROR open-plugin: plugin "devtools" MCP server "database" failed to start: connection refused on port 5432. Other plugin components remain available.` | `{"level":"error","event":"open_plugin.mcp.start_failed","plugin":"devtools","server":"database","error":"connection refused on port 5432","action":"continue_without_mcp"}` | No | Check that other components still load |
-| Partial host support | Hosts SHOULD warn when configuration is invalid, conflicting, or partially unsupported ([§12.3](#123-unsupported-components-and-failures)) | `WARN open-plugin: plugin "devtools" is partially supported: this host supports skills but not MCP servers` | `{"level":"warn","event":"open_plugin.host.partial_support","plugin":"devtools","supported":["skills"],"unsupported":["mcpServers"],"action":"loaded_partial"}` | No | Check that supported components are functional |
+| Partial host support | Hosts MAY report a partially unsupported plugin ([§11.3](#113-unsupported-components-and-failures)) | `WARN open-plugin: plugin "devtools" is partially supported: this host supports skills but not MCP servers` | `{"level":"warn","event":"open_plugin.host.partial_support","plugin":"devtools","supported":["skills"],"unsupported":["mcpServers"],"action":"loaded_partial"}` | No | Check that supported components are functional |
 
 > **Implementer note:** The `event` field values above (e.g., `open_plugin.manifest.invalid_required_field`) are *suggested* stable identifiers — not required by this spec. Hosts that adopt them gain a machine-readable diagnostic surface that agents, CI pipelines, and plugin validators can consume deterministically. The recommended fields for every diagnostic record are: `level`, `event`, `plugin` (plugin name), the relevant component identifier (e.g., `server` or `field`), and `action` (what the host did in response).
 
@@ -658,7 +622,7 @@ A host is not required to support every component type. Incremental adoption is 
 
 ## Design Decisions
 
-*This section explains why key design choices were made. It is for context only — the binding rules are in sections 1–12 above.*
+*This section explains why key design choices were made. It is for context only — the binding rules are in sections 1–11 above.*
 
 ### Why directory-based discovery?
 
@@ -667,10 +631,6 @@ Plugins use filesystem directories as the package unit rather than archive forma
 ### Why only Agent Skills and MCP in v1?
 
 Agent Skills and MCP have independently maintained formats with meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
-
-### Why colon-separated namespacing for components?
-
-The `plugin-name:component-name` format was chosen because colons are visually distinct and rarely appear in component names. Alternatives considered included `/` (conflicts with filesystem paths) and `__` (less readable for user-facing identifiers).
 
 ### Why root-level `plugin.json` is the conformance floor
 
@@ -690,7 +650,7 @@ MCP server arguments often need absolute paths at runtime. `${PLUGIN_ROOT}` prov
 
 ### Why component failures are non-fatal
 
-When an MCP server fails to start, the host continues loading the plugin's remaining components ([§12.3](#123-unsupported-components-and-failures)). A plugin that provides skills and an MCP server should not become entirely unusable because the server's runtime dependency is missing or its port is occupied. The spec pairs non-fatal component failures with diagnostic requirements so that failures are visible rather than silent.
+When an MCP server fails to start, the host continues loading the plugin's remaining components ([§11.3](#113-unsupported-components-and-failures)). A plugin that provides skills and an MCP server should not become entirely unusable because the server's runtime dependency is missing or its port is occupied. The spec pairs non-fatal component failures with diagnostic requirements so that failures are visible rather than silent.
 
 <!-- DISCUSSION: diagnostics-contract -->
 
