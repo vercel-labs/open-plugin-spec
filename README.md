@@ -39,7 +39,7 @@ Greet the user. If `$ARGUMENTS` is present, include it in the greeting.
 A host that supports skills can load this plugin by reading `plugin.json`, discovering `skills/greet/SKILL.md`, and surfacing `/hello-plugin:greet`.
 
 > **Note:**
-> The Core Profile reading path in this document is package layout (§4), manifest loading (§5–6), discovery (§7), skills and MCP servers (§8), namespacing (§9), plugin variable expansion (§10), and minimum host conformance (§12). Commands, agents, rules, hooks, LSP servers, and output styles are optional extended component types defined in Appendix D.
+> Open Plugin v1 standardizes two component types: Agent Skills and MCP servers. Other capabilities are outside the portable v1 format.
 
 ## Table of contents
 
@@ -59,7 +59,6 @@ A host that supports skills can load this plugin by reading `plugin.json`, disco
 **Appendices (not required for conformance)**
 
 - [Appendix A: Conformance Checklist](#appendix-a-conformance-checklist)
-- [Appendix D: Extended Component Types](#appendix-d-extended-component-types)
 - [Design Decisions](#design-decisions)
 - [Future Considerations](#future-considerations)
 
@@ -96,7 +95,7 @@ The key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY, an
 | Plugin             | Package unit               | A self-contained directory that bundles one or more components and optional metadata.                                                        |
 | Plugin root        | Filesystem root            | The top-level directory of a plugin package.                                                                                                 |
 | Manifest           | Metadata document          | A `plugin.json` file at the plugin root.                                                                                                    |
-| Component          | Plugin-provided capability | A skill or MCP server configuration (core), or an extended type such as a command, agent, rule, hook, LSP server, or output style.            |
+| Component          | Plugin-provided capability | A skill or MCP server configuration.                                                                                                         |
 | Host               | Plugin runtime             | A tool that discovers, installs, loads, and executes plugin components.                                                                      |
 | Discovery source   | Scan location              | A default location, manifest-declared path, or inline configuration object from which a host loads components.                               |
 | Path config        | Discovery object           | An object with `paths` that controls scanning for a component type.                                                                          |
@@ -139,17 +138,8 @@ The first example is valid — all paths start with `./` and stay within the plu
 ```text
 my-plugin/
 ├── plugin.json
-├── commands/
-├── agents/
 ├── skills/
-├── output-styles/
-├── rules/
-├── hooks/
-│   └── hooks.json
 ├── .mcp.json
-├── .lsp.json
-├── scripts/
-├── assets/
 ├── LICENSE
 └── CHANGELOG.md
 ```
@@ -165,14 +155,11 @@ code-assistant/
 └── .mcp.json
 ```
 
-Example: full plugin with all component types
+Example: plugin with both v1 component types
 
 ```text
 devtools/
 ├── plugin.json
-├── commands/
-│   ├── deploy.md
-│   └── status.md
 ├── skills/
 │   └── code-review/
 │       ├── SKILL.md
@@ -180,18 +167,7 @@ devtools/
 │       │   └── analyze.sh
 │       └── references/
 │           └── checklist.md
-├── agents/
-│   └── security-reviewer.md
-├── rules/
-│   └── prefer-const.mdc
-├── hooks/
-│   └── hooks.json
 ├── .mcp.json
-├── .lsp.json
-├── scripts/
-│   ├── format.sh
-│   └── check-env.sh
-├── assets/
 ├── LICENSE
 └── CHANGELOG.md
 ```
@@ -299,14 +275,8 @@ The manifest MUST be JSON and MUST contain a top-level object.
   "repository": "https://github.com/example/plugin",
   "license": "MIT",
   "keywords": ["keyword1", "keyword2"],
-  "commands": ["./custom/commands/"],
-  "agents": "./custom/agents/",
   "skills": "./custom/skills/",
-  "rules": "./custom/rules/",
-  "hooks": "./config/hooks.json",
-  "mcpServers": "./mcp-config.json",
-  "lspServers": "./.lsp.json",
-  "outputStyles": "./styles/"
+  "mcpServers": "./mcp-config.json"
 }
 ```
 
@@ -334,13 +304,10 @@ Example: full manifest
   },
   "license": "Apache-2.0",
   "keywords": ["devtools", "code-review", "linting", "security"],
-  "commands": "./commands/",
   "skills": {
     "paths": ["./skills/"]
   },
-  "hooks": "./hooks/hooks.json",
-  "mcpServers": "./.mcp.json",
-  "lspServers": "./.lsp.json"
+  "mcpServers": "./.mcp.json"
 }
 ```
 
@@ -394,8 +361,6 @@ Core component path fields:
 | `skills`       | string \| string[] \| object | Skill directories, or a path config.                       |
 | `mcpServers`   | string \| string[] \| object | MCP config paths, a path config, or inline MCP config.     |
 
-Hosts MAY support additional component path fields for extended component types. See [Appendix D: Extended Component Types](#appendix-d-extended-component-types) for details.
-
 When the manifest declares paths for a component type, those paths control discovery for that type. The default location is not scanned unless the manifest explicitly includes it.
 
 Example: custom paths override the default
@@ -434,8 +399,6 @@ Hosts MUST interpret object values for component path fields as follows:
 | -------------- | ---------------------------------------------------- | ------------------- |
 | `mcpServers`   | Object containing `mcpServers`                       | Inline MCP config.  |
 | Any path field | Object containing `paths`                            | Path config.        |
-
-Hosts that support extended component types (see [Appendix D](#appendix-d-extended-component-types)) MAY define additional object shapes for those fields (e.g., inline hook config, inline LSP config).
 
 If an object matches none of the shapes above, or matches more than one shape, the host SHOULD treat the field as invalid and SHOULD warn.
 
@@ -518,8 +481,6 @@ Core component locations:
 | Skills        | `skills/`          | Subdirectories containing `SKILL.md` |
 | MCP servers   | `.mcp.json`        | JSON configuration                   |
 
-Hosts MAY support extended component types with their own default locations. See [Appendix D: Extended Component Types](#appendix-d-extended-component-types) for details.
-
 Example: given a plugin `reports-plugin` with this layout:
 
 ```text
@@ -590,7 +551,7 @@ The host discovers both `/reports-plugin:summarize` and `/reports-plugin:deploy`
 
 > **See also:** [§7 Component discovery](#7-component-discovery) for how component files are located, and [§9 Namespacing](#9-namespacing) for how component names are surfaced to users and models.
 
-This specification normatively defines discovery for two component types that are backed by open standards: **skills** and **MCP servers**. Hosts MAY support additional component types (commands, agents, rules, hooks, LSP servers, output styles). See [Appendix D: Extended Component Types](#appendix-d-extended-component-types) for reference definitions of these additional types.
+Open Plugin v1 defines exactly two portable component types: **skills** and **MCP servers**. Other capabilities are outside the v1 format and do not affect conformance.
 
 Hosts MUST ignore component types they do not support.
 
@@ -697,7 +658,7 @@ Example: component namespacing
 
 ### 10.1 Required variables
 
-Hosts that launch plugin subprocesses (e.g., MCP servers, hook commands) MUST provide an environment variable containing the absolute plugin root path.
+Hosts that launch plugin subprocesses (i.e., MCP servers) MUST provide an environment variable containing the absolute plugin root path.
 
 | Variable      | Description             | Notes                                                      |
 | ------------- | ----------------------- | ---------------------------------------------------------- |
@@ -790,18 +751,16 @@ Example: a skills-only host is conformant. It only needs to:
 4. Respect manifest-declared skill paths.
 ```
 
-A host that only supports skills — and ignores MCP servers, commands, agents, rules, hooks, LSP servers, and output styles — is fully conformant to Open Plugin v1 as long as it meets all seven requirements above.
-
-Support for extended component types (commands, agents, rules, hooks, LSP servers, output styles) is OPTIONAL. See [Appendix D: Extended Component Types](#appendix-d-extended-component-types).
+A host that only supports skills and ignores MCP servers is fully conformant to Open Plugin v1 as long as it meets all seven requirements above.
 
 ### 12.2 Incremental adoption
 
 A host is not required to support every component type. Incremental adoption is conformant.
 
-### 12.3 Unsupported features
+### 12.3 Unsupported components and failures
 
 1. Hosts MUST ignore unsupported component types.
-2. Hosts MUST continue loading a plugin when a component fails independently, such as an MCP server startup failure, unless the host explicitly treats that failure as fatal for that component only.
+2. Hosts MUST continue loading a plugin when a component fails independently, such as an MCP server startup failure.
 3. Hosts SHOULD warn when configuration is invalid, conflicting, or partially unsupported.
 
 ---
@@ -838,8 +797,8 @@ A host is not required to support every component type. Incremental adoption is 
 
 ### Resilience
 
-- [ ] Ignore unsupported component types ([§12.3](#123-unsupported-features))
-- [ ] Continue loading when optional components fail ([§12.3](#123-unsupported-features))
+- [ ] Ignore unsupported component types ([§12.3](#123-unsupported-components-and-failures))
+- [ ] Continue loading when an independent component fails ([§12.3](#123-unsupported-components-and-failures))
 - [ ] Support at least one core component type ([§12.1](#121-minimum-host-requirements))
 
 ### Diagnostics matrix
@@ -855,10 +814,9 @@ A host is not required to support every component type. Incremental adoption is 
 | Invalid ambiguous object field | Hosts SHOULD treat unrecognized object shapes as invalid and SHOULD warn ([§6.6](#66-object-field-disambiguation)) | `WARN open-plugin: plugin "devtools" manifest field "mcpServers" is invalid: expected either a path config with "paths" key or an inline config with "mcpServers" key; field ignored, plugin load continues` | `{"level":"warn","event":"open_plugin.manifest.invalid_object","plugin":"devtools","field":"mcpServers","action":"ignored","continue":true}` | No | Check that the invalid field is skipped and remaining components load |
 | MCP server startup failure | If a server fails to start, the host SHOULD log the error and continue loading other components ([§8.2.2](#822-plugin-specific-discovery-rules)) | `ERROR open-plugin: plugin "devtools" MCP server "database" failed to start: connection refused on port 5432. Other plugin components remain available.` | `{"level":"error","event":"open_plugin.mcp.start_failed","plugin":"devtools","server":"database","error":"connection refused on port 5432","action":"continue_without_mcp"}` | No | Check that other components still load |
 | MCP server name conflict | Hosts SHOULD warn and SHOULD resolve conflicts deterministically. Conflicting names MUST NOT crash plugin loading ([§8.2.2](#822-plugin-specific-discovery-rules)) | `WARN open-plugin: plugin "devtools" MCP server name "filesystem" defined in multiple config files; using first definition` | `{"level":"warn","event":"open_plugin.mcp.name_conflict","plugin":"devtools","server":"filesystem","action":"used_first"}` | No | Check that one definition wins deterministically and loading continues |
-| Unsupported component type | Hosts MUST ignore unsupported component types ([§12.3](#123-unsupported-features)) | `INFO open-plugin: plugin "devtools" declares component type "agents" which is not supported by this host; ignored` | `{"level":"info","event":"open_plugin.host.unsupported_component","plugin":"devtools","component_type":"agents","action":"ignored"}` | No | Check that supported components still load |
-| Partial host support | Hosts SHOULD warn when configuration is invalid, conflicting, or partially unsupported ([§12.3](#123-unsupported-features)) | `WARN open-plugin: plugin "devtools" is partially supported: this host supports skills and hooks but not mcpServers or lspServers` | `{"level":"warn","event":"open_plugin.host.partial_support","plugin":"devtools","supported":["skills","hooks"],"unsupported":["mcpServers","lspServers"],"action":"loaded_partial"}` | No | Check that supported components are functional |
+| Partial host support | Hosts SHOULD warn when configuration is invalid, conflicting, or partially unsupported ([§12.3](#123-unsupported-components-and-failures)) | `WARN open-plugin: plugin "devtools" is partially supported: this host supports skills but not MCP servers` | `{"level":"warn","event":"open_plugin.host.partial_support","plugin":"devtools","supported":["skills"],"unsupported":["mcpServers"],"action":"loaded_partial"}` | No | Check that supported components are functional |
 
-> **Implementer note:** The `event` field values above (e.g., `open_plugin.manifest.invalid_object`) are *suggested* stable identifiers — not required by this spec. Hosts that adopt them gain a machine-readable diagnostic surface that agents, CI pipelines, and plugin validators can consume deterministically. The recommended fields for every diagnostic record are: `level`, `event`, `plugin` (plugin name), the relevant component identifier (e.g., `server`, `field`, `hook_event`), and `action` (what the host did in response).
+> **Implementer note:** The `event` field values above (e.g., `open_plugin.manifest.invalid_object`) are *suggested* stable identifiers — not required by this spec. Hosts that adopt them gain a machine-readable diagnostic surface that agents, CI pipelines, and plugin validators can consume deterministically. The recommended fields for every diagnostic record are: `level`, `event`, `plugin` (plugin name), the relevant component identifier (e.g., `server` or `field`), and `action` (what the host did in response).
 
 ---
 
@@ -870,9 +828,13 @@ A host is not required to support every component type. Incremental adoption is 
 
 Plugins use filesystem directories as the package unit rather than archive formats (`.zip`, `.tar.gz`) or registry-fetched bundles. This keeps plugins inspectable with standard tools (`ls`, `cat`, `git`), editable in-place during development, and compatible with version control without special tooling.
 
+### Why only Agent Skills and MCP in v1?
+
+Agent Skills and MCP have independently maintained formats with meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
+
 ### Why colon-separated namespacing for components?
 
-The `plugin-name:component-name` format was chosen because colons are visually distinct, rarely appear in filenames, and align with existing conventions in tools like Claude Code's slash commands (`/plugin:command`). Alternatives considered included `/` (conflicts with filesystem paths) and `__` (less readable for user-facing identifiers).
+The `plugin-name:component-name` format was chosen because colons are visually distinct and rarely appear in component names. Alternatives considered included `/` (conflicts with filesystem paths) and `__` (less readable for user-facing identifiers).
 
 ### Why root-level `plugin.json` is the conformance floor
 
@@ -884,11 +846,11 @@ One manifest avoids scattering plugin configuration across multiple directories 
 
 ### Why plugin variables over relative paths in configs?
 
-MCP server arguments often need absolute paths at runtime. `${PLUGIN_ROOT}` provides an unambiguous, host-resolved anchor for bundled files, while `${PLUGIN_DATA}` identifies host-managed writable state that persists when package contents are replaced during an update. The `command` field does not use interpolation: a `./` path is resolved directly against the plugin root, and a bare name uses the platform's executable search rules. Treating `command` as one token avoids requiring hosts to parse and escape user-authored shell command strings. Sections 8 and 10 require this behavior for MCP servers; Appendix D recommends analogous behavior for optional executable component types.
+MCP server arguments often need absolute paths at runtime. `${PLUGIN_ROOT}` provides an unambiguous, host-resolved anchor for bundled files, while `${PLUGIN_DATA}` identifies host-managed writable state that persists when package contents are replaced during an update. The `command` field does not use interpolation: a `./` path is resolved directly against the plugin root, and a bare name uses the platform's executable search rules. Treating `command` as one token avoids requiring hosts to parse and escape user-authored shell command strings.
 
-### Why optional-component failures are non-fatal
+### Why component failures are non-fatal
 
-When an MCP server fails to start, an LSP binary is missing, or a hook command exits non-zero, the host continues loading the remaining components ([§12.3](#123-unsupported-features)). This design reflects the reality that plugins bundle heterogeneous components with different runtime dependencies — a plugin that provides skills, hooks, *and* an MCP server should not become entirely unusable because one server's port is occupied. Non-fatal failures also make plugins more resilient in constrained environments (CI runners, containers, minimal installs) where not every runtime dependency is available. The spec pairs this with diagnostic requirements so that failures are visible rather than silent.
+When an MCP server fails to start, the host continues loading the plugin's remaining components ([§12.3](#123-unsupported-components-and-failures)). A plugin that provides skills and an MCP server should not become entirely unusable because the server's runtime dependency is missing or its port is occupied. The spec pairs non-fatal component failures with diagnostic requirements so that failures are visible rather than silent.
 
 <!-- DISCUSSION: diagnostics-contract -->
 
@@ -905,7 +867,7 @@ v1.0.0 does not define a trust model, permission system, or sandboxing requireme
 - Permission declarations in the manifest (e.g., filesystem access, network access, tool access)
 - Host-enforced capability restrictions per plugin
 - User consent flows for plugin installation and capability grants
-- Approval UX for hooks and MCP servers that execute arbitrary commands or access external services
+- Approval UX for MCP servers that execute arbitrary commands or access external services
 - Graduated trust levels (e.g., "sandboxed", "user-approved", "organization-approved")
 
 ### Provenance verification
@@ -918,7 +880,7 @@ v1.0.0 does not specify how hosts or users can verify the origin or integrity of
 
 ### Secret and sensitive value handling
 
-Plugin components (hooks, MCP servers, LSP servers) often need credentials or API keys at runtime. v1.0.0 does not specify how sensitive values should be provided, stored, or scoped. A future version may define:
+MCP servers often need credentials or API keys at runtime. v1.0.0 does not specify how sensitive values should be provided, stored, or scoped. A future version may define:
 
 - A `secrets` manifest field or separate secrets configuration
 - Host-mediated secret injection that avoids plaintext in config files
@@ -932,7 +894,7 @@ Organizations deploying plugins at scale need policy enforcement that v1.0.0 doe
 - Allowlist and blocklist policies for plugin installation by name, publisher, or signature
 - Organization-scoped plugin registries with approval workflows
 - Centralized configuration overrides that take precedence over user-level plugin settings
-- Compliance reporting hooks for plugin installation and usage events
+- Compliance reporting for plugin installation and usage events
 
 ### Audit-trail standardization
 
@@ -955,13 +917,9 @@ Plugins currently cannot declare dependencies on other plugins. A future version
 
 v1.0.0 assumes plugins are source-distributable (scripts, markdown, JSON configs). A future version may address:
 
-- Precompiled binary distribution for MCP and LSP servers
+- Precompiled binary distribution for MCP servers
 - Platform-specific binary selection
 - Integrity verification for binary artifacts
-
-### Output styles runtime semantics
-
-The `outputStyles` field is defined only at the discovery level. A future version should specify the runtime format and rendering contract for output style resources.
 
 ### Plugin testing and validation
 
@@ -970,75 +928,3 @@ No test harness or validation tool is specified. A future version may define:
 - A `test` manifest field or convention
 - A standard plugin linter or validator command
 - Conformance test suites for host implementations
-
-## Appendix D: Extended Component Types
-
-*This appendix is not required for v1 conformance. It defines component types that hosts MAY support beyond the core skill and MCP server types. These formats are based on conventions established by existing hosts but are not yet backed by independent open standards. A future version of the spec may promote some of these to core component types.*
-
-### D.1 Command skills
-
-Command skills are markdown files discovered from `commands/`.
-
-1. The filename without extension is the command name.
-2. Command files MAY contain YAML frontmatter.
-
-| Field                      | Type    | Description                                                              |
-| -------------------------- | ------- | ------------------------------------------------------------------------ |
-| `description`              | string  | Short description for display and matching.                              |
-| `disable-model-invocation` | boolean | If `true`, require explicit user invocation. Defaults to `false`.        |
-
-The markdown body is the command instruction body. The placeholder `$ARGUMENTS` in a command body is replaced with user-provided text after the command name.
-
-### D.2 Agents
-
-Agent definitions are markdown files with YAML frontmatter discovered from `agents/`.
-
-| Field         | Type   | Description                                                  |
-| ------------- | ------ | ------------------------------------------------------------ |
-| `name`        | string | Required agent identifier (1-64 chars, lowercase alphanumeric and hyphens). |
-| `description` | string | Required description (max 1024 characters).                  |
-
-The markdown body after frontmatter is the agent system prompt.
-
-### D.3 Rules
-
-Rule files are markdown with YAML frontmatter discovered from `rules/`. The default extension is `.mdc`.
-
-| Field         | Type               | Description                                                       |
-| ------------- | ------------------ | ----------------------------------------------------------------- |
-| `description` | string             | Required summary of the rule.                                     |
-| `alwaysApply` | boolean            | If `true`, the rule is active automatically. Defaults to `false`. |
-| `globs`       | string \| string[] | Optional file glob or glob list limiting rule applicability.      |
-
-The markdown body is the rule text injected when the rule is active.
-
-### D.4 Hooks
-
-The default hook configuration path is `hooks/hooks.json`. Hooks MAY also be declared inline in the manifest `hooks` field.
-
-The hook configuration contains a top-level `hooks` object. Each event key maps to an array of hook rules.
-
-| Field     | Type   | Description                                                         |
-| --------- | ------ | ------------------------------------------------------------------- |
-| `matcher` | string | Optional regular expression matched against event-specific context. |
-| `hooks`   | array  | Required list of hook actions.                                      |
-
-Hook event names and payloads are host-defined in v1.
-
-Hook action types: `command` (executable), `http` (POST to URL), `prompt` (LLM evaluation), `agent` (agentic verifier).
-
-Hosts supporting `command` hook actions should apply the command resolution and default working-directory behavior from §8.2.1. They should provide `PLUGIN_ROOT` and `PLUGIN_DATA` and expand `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in `args`, `env`, and explicit `cwd` string values when those fields are present, but not in `command`.
-
-### D.5 LSP servers
-
-The default LSP configuration path is `.lsp.json`. LSP servers MAY also be declared inline in the manifest `lspServers` field. The top-level object uses direct server-name keys.
-
-Required fields: `command` (a bare executable name or plugin-relative `./` path), `extensionToLanguage` (file extension to language ID mapping).
-
-Optional fields: `args`, `cwd`, `transport`, `env`, `initializationOptions`, `settings`, `workspaceFolder`, `startupTimeout`, `shutdownTimeout`, `restartOnCrash`, `maxRestarts`.
-
-Hosts supporting LSP servers should apply the command resolution and default working-directory behavior from §8.2.1. They should provide `PLUGIN_ROOT` and `PLUGIN_DATA` and expand `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in `args`, `cwd`, `env`, and `workspaceFolder` string values, but not in `command`.
-
-### D.6 Output styles
-
-`outputStyles` is a discovery field for host-defined output style resources. This specification does not define output style runtime semantics beyond discovery.
