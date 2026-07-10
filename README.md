@@ -59,7 +59,6 @@ A host that supports skills can load this plugin by reading `plugin.json`, disco
 **Appendices (not required for conformance)**
 
 - [Appendix A: Conformance Checklist](#appendix-a-conformance-checklist)
-- [Appendix C: Extended Hook Events](#appendix-c-extended-hook-events)
 - [Appendix D: Extended Component Types](#appendix-d-extended-component-types)
 - [Design Decisions](#design-decisions)
 - [Future Considerations](#future-considerations)
@@ -966,37 +965,6 @@ No test harness or validation tool is specified. A future version may define:
 - A standard plugin linter or validator command
 - Conformance test suites for host implementations
 
-## Appendix C: Extended Hook Events
-
-*This appendix is not required for v1 conformance. It catalogs hook events implemented by existing hosts. Hosts MAY support any subset of these. Plugin authors should check host documentation for supported events. See [Appendix D.4](#d4-hooks) for the hook format definition.*
-
-| Event                | Matcher context   | Description                                       | Known hosts  |
-| -------------------- | ----------------- | ------------------------------------------------- | ------------ |
-| `UserPromptSubmit`   | None              | Fires when a user prompt is submitted.            | Claude Code  |
-| `Stop`               | None              | Fires when the agent finishes responding.         | Claude Code  |
-| `StopFailure`        | Error type        | Fires when a turn ends due to an API error.       | Claude Code  |
-| `SubagentStart`      | Agent type        | Fires when a sub-agent starts.                    | Claude Code  |
-| `SubagentStop`       | Agent type        | Fires when a sub-agent stops.                     | Claude Code  |
-| `PreCompact`         | Trigger           | Fires before context compaction.                  | Claude Code  |
-| `PostCompact`        | Trigger           | Fires after context compaction completes.         | Claude Code  |
-| `TeammateIdle`       | None              | Fires when a teammate agent is about to idle.     | Claude Code  |
-| `TaskCreated`        | None              | Fires when a task is created.                     | Claude Code  |
-| `TaskCompleted`      | None              | Fires when a task is marked completed.            | Claude Code  |
-| `Notification`       | Notification type | Fires when the host sends a notification.         | Claude Code  |
-| `PermissionRequest`  | None              | Fires when a permission dialog is shown.          | Claude Code  |
-| `InstructionsLoaded` | Load reason       | Fires when instruction files are loaded.          | Claude Code  |
-| `ConfigChange`       | Config source     | Fires when a configuration file changes.          | Claude Code  |
-| `CwdChanged`         | None              | Fires when the working directory changes.         | Claude Code  |
-| `FileChanged`        | Filename          | Fires when a watched file changes on disk.        | Claude Code  |
-| `WorktreeCreate`     | None              | Fires when a worktree is being created.           | Claude Code  |
-| `WorktreeRemove`     | None              | Fires when a worktree is being removed.           | Claude Code  |
-| `Elicitation`        | MCP server name   | Fires when an MCP server requests user input.     | Claude Code  |
-| `ElicitationResult`  | MCP server name   | Fires when a user responds to an MCP elicitation. | Claude Code  |
-
-As additional hosts adopt the Open Plugin format, this table will be updated with cross-host event support information. Events supported by multiple hosts are candidates for promotion to the core set in future spec versions.
-
----
-
 ## Appendix D: Extended Component Types
 
 *This appendix is not required for v1 conformance. It defines component types that hosts MAY support beyond the core skill and MCP server types. These formats are based on conventions established by existing hosts but are not yet backed by independent open standards. A future version of the spec may promote some of these to core component types.*
@@ -1049,7 +1017,7 @@ The hook configuration contains a top-level `hooks` object. Each event key maps 
 | `matcher` | string | Optional regular expression matched against event-specific context. |
 | `hooks`   | array  | Required list of hook actions.                                      |
 
-Core hook events: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `SessionStart`, `SessionEnd`. See [Appendix C: Extended Hook Events](#appendix-c-extended-hook-events) for additional events.
+Hook event names and payloads are host-defined in v1.
 
 Hook action types: `command` (shell command), `http` (POST to URL), `prompt` (LLM evaluation), `agent` (agentic verifier).
 
