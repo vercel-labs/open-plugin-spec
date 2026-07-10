@@ -106,11 +106,9 @@ The key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY, an
 1. A plugin is a directory rooted at a single filesystem location.
 2. A plugin MUST include a manifest at `plugin.json` in the plugin root.
 3. A plugin MUST contain zero or more supported components. A directory with only a manifest is valid but may not be useful on hosts that require at least one supported component at runtime.
-4. All relative filesystem paths declared by the plugin MUST be interpreted relative to the plugin root.
-5. All relative filesystem paths declared by the plugin MUST start with `./`.
-6. A plugin MUST NOT reference files outside its own directory tree by using `../` traversal.
-7. Hosts MUST reject any configured path that escapes the plugin root after lexical path normalization or filesystem resolution.
-8. When resolving a configured path, hosts MUST treat the filesystem-resolved plugin root as the containment boundary. Symlinks, junctions, reparse points, and equivalent filesystem mechanisms MAY resolve to targets within that boundary, but hosts MUST reject paths that resolve outside it.
+4. When a host discovers, reads, or executes a file or directory supplied by the plugin package, the filesystem-resolved path MUST remain within the filesystem-resolved plugin root. Symlinks, junctions, reparse points, and equivalent filesystem mechanisms MAY resolve to targets within the plugin root, but hosts MUST reject package paths that resolve outside it.
+5. A configuration field defined by this specification as a plugin-relative path MUST begin with `./`, be resolved against the plugin root, and remain within the filesystem-resolved plugin root after resolution.
+6. Configuration values not defined as paths, including command arguments and environment variable values, are opaque strings. Hosts MUST NOT interpret them as package paths for the purpose of enforcing this section.
 
 Example: valid and invalid relative paths
 
@@ -136,7 +134,9 @@ Example: valid and invalid relative paths
 }
 ```
 
-The first example is valid — both paths start with `./` and stay within the plugin root. The second is invalid — `../bin/server` escapes the plugin root and `data` does not start with `./`.
+The first example is valid — both paths start with `./` and stay within the plugin root. The second is invalid — `../bin/server` escapes the plugin root and `data` is not a plugin-relative path.
+
+These containment rules govern access to files supplied by the plugin package. They do not sandbox a plugin subprocess or restrict paths supplied at runtime, including the host-managed `PLUGIN_DATA` directory defined in §10.1.1.
 
 ### 4.2 Standard layout
 
