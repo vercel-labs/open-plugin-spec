@@ -9,17 +9,12 @@
       "const": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
       "description": "Canonical identifier of the plugin manifest schema for the Open Plugin version targeted by this document."
     },
-    "id": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Durable plugin identifier."
-    },
     "name": {
       "type": "string",
       "minLength": 1,
       "maxLength": 64,
       "pattern": "^(?!.*(?:--|\\.\\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$",
-      "description": "Human-readable plugin identifier."
+      "description": "Human-readable plugin name."
     },
     "version": {
       "type": "string"
@@ -58,6 +53,6 @@
       }
     }
   },
-  "required": ["$schema", "id", "name"],
+  "required": ["$schema", "name"],
   "additionalProperties": false
 }

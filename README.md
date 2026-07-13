@@ -21,7 +21,6 @@ hello-plugin/
 ```json
 {
   "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
-  "id": "https://github.com/example/hello-plugin/tree/main",
   "name": "hello-plugin"
 }
 ```
@@ -176,7 +175,7 @@ A host loads and validates root `plugin.json` before discovering components or a
 
 ### 5.2 Manifest object
 
-The manifest MUST be JSON and MUST contain a top-level object. Its schema is closed: the only permitted top-level fields are `$schema`, `id`, `name`, `version`, `description`, `author`, `homepage`, `repository`, `license`, and `keywords`.
+The manifest MUST be JSON and MUST contain a top-level object. Its schema is closed: the only permitted top-level fields are `$schema`, `name`, `version`, `description`, `author`, `homepage`, `repository`, `license`, and `keywords`.
 
 If `plugin.json` contains any other top-level field, the manifest is invalid. Hosts MUST reject the plugin and MUST NOT discover or execute any of its components. Hosts SHOULD report each unsupported field. Client-specific fields belong under `.<client>/` as defined in §8.
 
@@ -193,7 +192,6 @@ Example: minimal manifest
 ```json
 {
   "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
-  "id": "https://github.com/example/minimal-plugin/tree/main",
   "name": "minimal-plugin"
 }
 ```
@@ -203,7 +201,6 @@ Example: full manifest
 ```json
 {
   "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
-  "id": "https://github.com/example/plugin/tree/main",
   "name": "plugin-name",
   "version": "1.2.0",
   "description": "Brief plugin description",
@@ -221,35 +218,12 @@ Example: full manifest
 
 ### 5.3 Required fields
 
-| Field     | Type   | Description                                                      |
-| --------- | ------ | ---------------------------------------------------------------- |
-| `$schema` | string | Canonical plugin manifest schema identifier defined in §5.2.     |
-| `id`      | string | Durable plugin identifier. SHOULD be a URL for the canonical plugin location. |
-| `name`    | string | Human-readable plugin identifier.                                |
+| Field     | Type   | Description                                                  |
+| --------- | ------ | ------------------------------------------------------------ |
+| `$schema` | string | Canonical plugin manifest schema identifier defined in §5.2. |
+| `name`    | string | Human-readable plugin name.                                  |
 
-The `id` value MUST be non-empty. If a required field is missing, has the wrong type, is empty, or otherwise violates its requirements, the manifest is invalid. Hosts MUST reject the plugin and MUST NOT discover or execute any of its components. Hosts SHOULD report which required field is invalid.
-
-The simplest portable form of `id` is the canonical URL where the plugin can be retrieved, such as a GitHub repository path or a cloud-hosted plugin URL.
-
-Examples:
-
-```json
-{
-  "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
-  "id": "https://github.com/acme/agent-plugins/tree/main/plugins/devtools",
-  "name": "devtools"
-}
-```
-
-```json
-{
-  "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
-  "id": "https://plugins.example.com/acme/devtools",
-  "name": "devtools"
-}
-```
-
-Hosts MAY store content hashes, resolved commit SHAs, signatures, or other integrity metadata alongside the plugin, but those mechanisms are not required by this specification.
+If a required field is missing, has the wrong type, is empty, or otherwise violates its requirements, the manifest is invalid. Hosts MUST reject the plugin and MUST NOT discover or execute any of its components. Hosts SHOULD report which required field is invalid.
 
 ### 5.4 Metadata fields
 
@@ -571,7 +545,7 @@ A host is not required to support every core component type. For example, a skil
 ### Plugin loader
 
 - [ ] Parse and validate `plugin.json` ([§5.1](#51-location-and-loading), [§5.2](#52-manifest-object))
-- [ ] Validate required `$schema`, `id`, and `name` fields ([§5.3](#53-required-fields))
+- [ ] Validate required `$schema` and `name` fields ([§5.3](#53-required-fields))
 - [ ] Validate plugin name against naming constraints ([§5.5](#55-plugin-name-constraints))
 - [ ] Reject unknown `plugin.json` fields ([§5.2](#52-manifest-object))
 - [ ] Reject package paths that resolve outside the plugin root ([§4.1](#41-general-requirements))
