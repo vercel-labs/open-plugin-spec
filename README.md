@@ -510,7 +510,9 @@ Hosts that launch plugin subprocesses MUST expand `${PLUGIN_ROOT}` and `${PLUGIN
 
 Expansion applies to every string element of `args`, every string value in `env`, and the `cwd` string. It does not apply to `env` keys, `command`, or fixed component locations.
 
-Unrecognized placeholder-like text MUST remain literal. Plugins claiming conformance MUST NOT depend on interpolation of placeholders other than `${PLUGIN_ROOT}` and `${PLUGIN_DATA}`.
+Unrecognized placeholder-like text MUST remain literal. Hosts MUST NOT perform any other placeholder or environment-variable expansion.
+
+Configured `env` values are visible package data, not a portable secret mechanism. Plugins MUST NOT embed credentials or other secrets in `env`.
 
 An MCP server's `env` object MUST NOT contain entries named `PLUGIN_ROOT` or `PLUGIN_DATA`. Such an entry makes that server configuration invalid under §7.2.2. Hosts MUST supply the reserved environment variables themselves.
 
@@ -617,7 +619,7 @@ A host is not required to support every core component type. For example, a skil
 - [ ] Validate explicit `cwd` forms and post-resolution containment ([§7.2.1](#721-discovery-and-configuration))
 - [ ] Overlay configured `env` entries on a host-selected base environment ([§9.1](#91-subprocess-environment))
 - [ ] Do not require configured `PATH` to affect bare-command resolution ([§7.2.1](#721-discovery-and-configuration))
-- [ ] Expand `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in MCP server `args`, `env`, and `cwd` fields ([§9.2](#92-placeholder-expansion))
+- [ ] Expand only `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in MCP server `args`, `env`, and `cwd` fields ([§9.2](#92-placeholder-expansion))
 
 ### Resilience
 
