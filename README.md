@@ -79,14 +79,15 @@ The Quick Start, Appendix A, Design Decisions, and Future Considerations section
 
 ## 3. Terminology
 
-| Term               | Meaning                    | Description                                                                                                                                  |
-| ------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Plugin             | Package unit               | A self-contained directory that bundles one or more components and optional metadata.                                                        |
-| Plugin root        | Filesystem root            | The top-level directory of a plugin package.                                                                                                 |
-| Manifest           | Metadata document          | A `plugin.json` file at the plugin root.                                                                                                    |
-| Component          | Plugin-provided capability | A skill or MCP server configuration.                                                                                                         |
-| Host               | Plugin runtime             | A tool that discovers, installs, loads, and executes plugin components.                                                                      |
-| Client namespace   | Extension directory        | A dot-prefixed top-level directory containing behavior owned by one client.                                                                  |
+| Term                | Meaning                    | Description                                                                                                                          |
+| ------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Plugin              | Package unit               | A self-contained directory with a manifest and optional components.                                                                  |
+| Plugin root         | Filesystem root            | The top-level directory of a plugin package.                                                                                         |
+| Manifest            | Metadata document          | A `plugin.json` file at the plugin root.                                                                                             |
+| Component           | Plugin-provided capability | A skill or MCP server configuration.                                                                                                 |
+| Host                | Plugin runtime             | A tool that discovers, installs, loads, and executes plugin components.                                                              |
+| Extension namespace | Client-owned identifier    | A reverse-domain identifier used for client-specific manifest data, a client-specific top-level directory, or both.                  |
+| Extension directory | Client-owned file root     | A top-level directory whose name is exactly an extension namespace and whose contents are defined by that namespace's owning client. |
 
 ## 4. Plugin package model
 
@@ -94,10 +95,9 @@ The Quick Start, Appendix A, Design Decisions, and Future Considerations section
 
 1. A plugin is a directory rooted at a single filesystem location.
 2. A plugin MUST include a manifest at `plugin.json` in the plugin root.
-3. A plugin MUST contain zero or more supported components. A directory with only a manifest is valid but may not be useful on hosts that require at least one supported component at runtime.
-4. When a host discovers, reads, or executes a file or directory supplied by the plugin package, the filesystem-resolved path MUST remain within the filesystem-resolved plugin root. Symlinks, junctions, reparse points, and equivalent filesystem mechanisms MAY resolve to targets within the plugin root, but hosts MUST reject package paths that resolve outside it.
-5. A configuration field defined by this specification as a plugin-relative path MUST begin with `./`, be resolved against the plugin root, and remain within the filesystem-resolved plugin root after resolution.
-6. Configuration values not defined as paths, including command arguments and environment variable values, are opaque strings. Hosts MUST NOT interpret them as package paths for the purpose of enforcing this section.
+3. When a host discovers, reads, or executes a file or directory supplied by the plugin package, the filesystem-resolved path MUST remain within the filesystem-resolved plugin root. Symlinks, junctions, reparse points, and equivalent filesystem mechanisms MAY resolve to targets within the plugin root, but hosts MUST reject package paths that resolve outside it.
+4. A configuration field defined by this specification as a plugin-relative path MUST begin with `./`, be resolved against the plugin root, and remain within the filesystem-resolved plugin root after resolution.
+5. Configuration values not defined as paths, including command arguments and environment variable values, are opaque strings. Hosts MUST NOT interpret them as package paths for the purpose of enforcing this section.
 
 Example: valid and invalid relative paths
 
@@ -154,12 +154,13 @@ my-plugin/
 │       └── references/
 │           └── checklist.md
 ├── mcp.json
-├── .client-name/
+├── com.example.client/
+│   └── hooks/
 ├── LICENSE
 └── CHANGELOG.md
 ```
 
-> **See also:** [§5 Manifest](#5-manifest) for manifest rules, [§6 Component discovery](#6-component-discovery) for fixed component locations and missing-location behavior, and [§8 Client extensions](#8-client-extensions) for client namespace rules.
+> **See also:** [§5 Manifest](#5-manifest) for manifest rules, [§6 Component discovery](#6-component-discovery) for fixed component locations and missing-location behavior, and [§8 Client extensions](#8-client-extensions) for client extension conventions.
 
 ## 5. Manifest
 
@@ -175,11 +176,11 @@ A host loads and validates root `plugin.json` before discovering components or a
 
 ### 5.2 Manifest object
 
-The manifest MUST be JSON and MUST contain a top-level object. Its schema is closed: the only permitted top-level fields are `$schema`, `name`, `version`, `description`, `author`, `homepage`, `repository`, `license`, and `keywords`.
+The manifest MUST be JSON and MUST contain a top-level object. Its schema is closed: the only permitted top-level fields are `$schema`, `name`, `version`, `description`, `author`, `homepage`, `repository`, `license`, `keywords`, and `extensions`.
 
-If `plugin.json` contains any other top-level field, it does not conform to the schema. Hosts MUST report and ignore each unknown field and MUST continue loading the plugin if the manifest otherwise satisfies this section. Hosts MUST NOT assign semantics to unknown fields. Client-specific fields belong under `.<client>/` as defined in §8.
+If `plugin.json` contains any other top-level field, it does not conform to the schema. Hosts MUST report and ignore each unknown field and MUST continue loading the plugin if the manifest otherwise satisfies this section. Hosts MUST NOT assign semantics to unknown fields. Client-specific manifest data belongs under `extensions` as defined in §8.
 
-Every permitted field MUST match the type and constraints defined below. Any schema violation other than an unknown top-level field is fatal: the host MUST reject the plugin and MUST NOT discover or execute any of its components.
+A non-object `extensions` field is handled as defined in §8.1. Every permitted field otherwise MUST match the type and constraints defined below. Any schema violation other than an unknown top-level field or a non-object `extensions` field is fatal: the host MUST reject the plugin and MUST NOT discover or execute any of its components.
 
 The official machine-readable schema is [`schemas/1.0.0/plugin.schema.json`](./schemas/1.0.0/plugin.schema.json). The specification text is authoritative if it conflicts with the schema.
 
@@ -212,7 +213,12 @@ Example: full manifest
   "homepage": "https://docs.example.com/plugin",
   "repository": "https://github.com/example/plugin",
   "license": "MIT",
-  "keywords": ["keyword1", "keyword2"]
+  "keywords": ["keyword1", "keyword2"],
+  "extensions": {
+    "com.example.client": {
+      "setting": true
+    }
+  }
 }
 ```
 
@@ -257,6 +263,10 @@ Periods are allowed in plugin names.
 Valid names: `my-plugin`, `acme.tools`, `lint3r`, `a`
 
 Invalid names: `My-Plugin` (uppercase), `-start` (leading hyphen), `has--double` (consecutive hyphens), `too.many..dots` (consecutive periods), `` (empty)
+
+### 5.6 Extensions field
+
+The optional `extensions` field contains client-specific manifest data keyed by extension namespace. See §8 for processing rules.
 
 ## 6. Component discovery
 
@@ -426,13 +436,50 @@ Example: `mcp.json`
 
 ## 8. Client extensions
 
-A client MAY use a top-level `.<client>/` directory for client-specific content. Open Plugin assigns no structure or semantics to the contents of that directory.
+Client-specific manifest data MUST be represented under a reverse-domain namespace in `extensions`. Client-specific files MUST be represented under a top-level directory named for that namespace. A client MAY use either representation or both.
 
-1. Client-specific content MUST live inside the namespace owned by that client and MUST NOT add fields to root `plugin.json`.
-2. Hosts MUST ignore client namespaces they do not implement.
-3. Client namespace contents do not affect Open Plugin conformance.
-4. A client MAY define its own precedence rules, including rules that supplement or override portable components in the plugin root. Such behavior is client-specific and outside this specification.
-5. Top-level paths not defined by Open Plugin v1 MUST NOT be interpreted as portable component types.
+A client SHOULD base its namespace on a domain name it controls and SHOULD keep the namespace stable. For example, a client that controls `example.com` could use `com.example.client`.
+
+Open Plugin assigns no portable semantics to client extension data or files. Each client defines the contents and behavior of its own namespace, including how its manifest data and directory contents relate.
+
+### 8.1 Manifest extension data
+
+The optional `extensions` field in `plugin.json` MUST be an object whose member names are client extension namespaces and whose member values are objects.
+
+Example:
+
+```json
+{
+  "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
+  "name": "example-plugin",
+  "extensions": {
+    "com.example.client": {
+      "setting": true
+    }
+  }
+}
+```
+
+If `extensions` is not an object, the host MUST report and ignore the field and continue loading portable components. A host MUST ignore manifest entries for namespaces it does not implement without validating the contents of their values. Validation and failure handling within an implemented namespace are defined by that client.
+
+### 8.2 Extension directories
+
+The extension directory for a namespace is the top-level directory named after it. For example, files for `com.example.client` belong in `com.example.client/`.
+
+Example: a file-only client extension
+
+```text
+my-plugin/
+├── plugin.json
+├── skills/
+│   └── summarize/
+│       └── SKILL.md
+└── com.example.client/
+    └── hooks/
+        └── hooks.json
+```
+
+A host that implements file-based behavior for a namespace MUST look for it in the corresponding top-level directory.
 
 ## 9. Environment variables and placeholder expansion
 
@@ -515,15 +562,13 @@ Hosts MAY use `version` to determine whether updates are available and whether c
 A conformant host MUST satisfy all applicable requirements in sections 1–10. At minimum, it:
 
 1. Can load a plugin from a directory path.
-2. Selects a locally supported plugin manifest schema from `$schema`, then parses and validates the closed `plugin.json` schema.
-3. Ignores client extension directories it does not implement.
+2. Selects a locally supported plugin manifest schema from `$schema`, then parses and validates the closed `plugin.json` schema using the non-fatal exceptions in §5.2 and §8.1.
+3. Ignores unimplemented members of `extensions` without validating the contents of their values.
 4. For each core component type it supports, discovers components in its fixed location.
 5. If it supports MCP servers, selects a locally supported MCP configuration schema from `$schema` and supports both the `stdio` and `streamable-http` variants in `mcp.json`.
 6. If the host launches plugin subprocesses (i.e., stdio MCP servers), provides `PLUGIN_ROOT` and `PLUGIN_DATA` and expands both variables in runtime configuration values (`args`, `env`, `cwd`).
 7. For stdio MCP servers, resolves `command` as a single executable token and uses the plugin root as the default subprocess working directory.
 8. Supports at least one core component type (skills or MCP servers).
-
-Client-specific behavior MUST be represented under `.<client>/`, not in root `plugin.json`. This preserves one strict portable manifest while allowing clients to experiment independently.
 
 ### 11.2 Incremental adoption
 
@@ -532,9 +577,9 @@ A host is not required to support every core component type. For example, a skil
 ### 11.3 Unsupported components and failures
 
 1. Hosts MUST ignore unsupported component types.
-2. An unknown top-level field in `plugin.json` is non-fatal under §5.2. Any other `plugin.json` schema violation is fatal to the plugin: the host MUST reject the plugin and MUST NOT discover or execute any of its components.
+2. An unknown top-level field or a non-object `extensions` field is non-fatal under §5.2 and §8.1. Any other `plugin.json` schema violation is fatal to the plugin: the host MUST reject the plugin and MUST NOT discover or execute any of its components.
 3. A failure isolated to a component type, component entry, or component process MUST NOT prevent the host from loading independently valid components. Hosts MUST apply the failure behavior defined for that component in §6 and §7.
-4. Hosts SHOULD report invalid configuration and component failures. Hosts MAY report partially unsupported plugins, but lack of support for a component type is not itself an error.
+4. Hosts SHOULD report invalid configuration and component failures. Hosts MAY report partially unsupported plugins, but lack of support for a component type or client extension is not itself an error.
 
 ---
 
@@ -548,8 +593,9 @@ A host is not required to support every core component type. For example, a skil
 - [ ] Validate required `$schema` and `name` fields ([§5.3](#53-required-fields))
 - [ ] Validate plugin name against naming constraints ([§5.5](#55-plugin-name-constraints))
 - [ ] Report and ignore unknown `plugin.json` fields ([§5.2](#52-manifest-object))
+- [ ] Ignore unimplemented namespaces in `extensions` without validating the contents of their values ([§8.1](#81-manifest-extension-data))
 - [ ] Reject package paths that resolve outside the plugin root ([§4.1](#41-general-requirements))
-- [ ] Ignore unsupported `.<client>/` directories ([§8](#8-client-extensions))
+- [ ] Discover implemented file-based extensions from their top-level namespace directories ([§8.2](#82-extension-directories))
 
 ### Component discovery
 
@@ -596,15 +642,15 @@ Agent Skills and MCP have independently maintained formats with meaningful cross
 
 ### Why root-level `plugin.json` is the conformance floor
 
-Every conformant host MUST check `plugin.json` at the plugin root ([§5.1](#51-location-and-loading)). This gives plugin authors a single guaranteed manifest that works across all hosts without client-specific path knowledge. Client-specific behavior belongs under `.<client>/`, leaving the root manifest portable.
+Every conformant host MUST check `plugin.json` at the plugin root ([§5.1](#51-location-and-loading)). This gives plugin authors a single guaranteed manifest that works across all hosts without client-specific path knowledge.
 
 ### Why a closed portable manifest?
 
-Restricting root `plugin.json` to known portable fields enables strict validation, typo detection, and schema-driven key completion. It also prevents client experiments from claiming top-level names that a future Open Plugin version may need. Unknown top-level fields remain schema violations, but hosts report and ignore them instead of rejecting an otherwise valid plugin; this preserves validation feedback without making those violations fatal to loading.
+Restricting root `plugin.json` to known fields enables strict validation, typo detection, and schema-driven key completion. Client experiments cannot claim arbitrary top-level fields; they are contained under reverse-domain keys in `extensions`. Unknown top-level fields remain schema violations, but hosts report and ignore them instead of rejecting an otherwise valid plugin.
 
-### Why dot-prefixed client directories?
+### Why reverse-domain client extensions?
 
-The dot prefix creates a visible namespace boundary: unprefixed standard locations belong to Open Plugin, while `.<client>/` belongs to one client. Keeping client-specific capabilities outside `plugin.json` preserves the closed schema and prevents client-specific top-level component directories from colliding with future portable component types.
+Reverse-domain identifiers provide a decentralized convention for avoiding collisions without requiring a central client-name registry. The same identifier can be used for manifest data and a client-specific directory, while either representation can exist independently. Extension directories remain top-level to keep plugin layouts flat and convention-driven.
 
 ### Why an explicit MCP configuration format?
 

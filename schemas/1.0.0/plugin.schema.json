@@ -51,6 +51,13 @@
       "items": {
         "type": "string"
       }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Client-specific manifest data keyed by reverse-domain extension namespace. Open Plugin assigns no semantics to namespace object contents.",
+      "additionalProperties": {
+        "type": "object"
+      }
     }
   },
   "required": ["$schema", "name"],
