@@ -510,7 +510,9 @@ Hosts that launch plugin subprocesses MUST expand `${PLUGIN_ROOT}` and `${PLUGIN
 
 Expansion applies to every string element of `args`, every string value in `env`, and the `cwd` string. It does not apply to `env` keys, `command`, or fixed component locations.
 
-Unrecognized placeholder-like text MUST remain literal. Plugins claiming conformance MUST NOT depend on interpolation of placeholders other than `${PLUGIN_ROOT}` and `${PLUGIN_DATA}`.
+Unrecognized placeholder-like text MUST remain literal. Hosts MUST NOT perform any other placeholder or environment-variable expansion.
+
+Configured `env` values are visible package data, not a portable secret mechanism. Plugins MUST NOT embed credentials or other secrets in `env`.
 
 An MCP server's `env` object MUST NOT contain entries named `PLUGIN_ROOT` or `PLUGIN_DATA`. Such an entry makes that server configuration invalid under §7.2.2. Hosts MUST supply the reserved environment variables themselves.
 
@@ -618,7 +620,7 @@ A host is not required to support every core component type. For example, a skil
 - [ ] Overlay configured `env` entries on a host-selected base environment ([§9.1](#91-subprocess-environment))
 - [ ] Set host-provided `PLUGIN_ROOT` and `PLUGIN_DATA` after applying configured `env`, replacing equivalent names according to platform environment-name semantics ([§9.1](#91-subprocess-environment))
 - [ ] Do not require configured `PATH` to affect bare-command resolution ([§7.2.1](#721-discovery-and-configuration))
-- [ ] Expand `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in MCP server `args`, `env`, and `cwd` fields ([§9.2](#92-placeholder-expansion))
+- [ ] Expand only `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` in MCP server `args`, `env`, and `cwd` fields ([§9.2](#92-placeholder-expansion))
 
 ### Resilience
 
@@ -639,7 +641,7 @@ Plugins use filesystem directories as the package unit rather than archive forma
 
 ### Why only Agent Skills and MCP in v1?
 
-Agent Skills and MCP have independently maintained formats with meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
+Open Plugin v1 focuses on Agent Skills and MCP because both have established specifications outside this project and meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
 
 ### Why root-level `plugin.json` is the conformance floor
 
