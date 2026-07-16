@@ -640,7 +640,7 @@ Plugins use filesystem directories as the package unit rather than archive forma
 
 ### Why only Agent Skills and MCP in v1?
 
-Agent Skills and MCP have independently maintained formats with meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
+Open Plugin v1 focuses on Agent Skills and MCP because both have established specifications outside this project and meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
 
 ### Why root-level `plugin.json` is the conformance floor
 
