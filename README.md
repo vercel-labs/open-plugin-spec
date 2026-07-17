@@ -1,8 +1,8 @@
-# Open Plugin Specification
+# Agent Plugin Specification
 
 **Spec Version: 1.0.0**
 
-This document defines the canonical Open Plugin Specification v1.0.0 for packaging agent extensions into distributable plugins.
+This document defines the canonical Agent Plugin Specification v1.0.0 for packaging agent extensions into distributable plugins.
 
 ## Quick Start (for context only — not required for conformance)
 
@@ -20,7 +20,7 @@ hello-plugin/
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "hello-plugin"
 }
 ```
@@ -39,7 +39,7 @@ Greet the user and offer help.
 A host that supports skills can load this plugin by reading `plugin.json` and discovering `skills/greet/SKILL.md`. How the host exposes the skill to users or models is outside this specification.
 
 > **Note:**
-> Open Plugin v1 standardizes two component types: Agent Skills and MCP servers. Other capabilities are outside the portable v1 format.
+> Agent Plugin v1 standardizes two component types: Agent Skills and MCP servers. Other capabilities are outside the portable v1 format.
 
 ## Table of contents
 
@@ -63,13 +63,13 @@ A host that supports skills can load this plugin by reading `plugin.json` and di
 
 ## 1. Status and version
 
-This specification defines version `1.0.0` of the Open Plugin format.
+This specification defines version `1.0.0` of the Agent Plugin format.
 
-Plugin hosts and plugin packages claiming conformance to Open Plugin v1 MUST implement or follow the requirements in this document.
+Plugin hosts and plugin packages claiming conformance to Agent Plugin v1 MUST implement or follow the requirements in this document.
 
 ### 1.1 Governance model
 
-Open Plugin project governance is defined separately from the portable package format in the [Technical Charter](./GOVERNANCE.md).
+Governance for the Agent Plugins project is defined separately from the portable package format in the [Technical Charter](./GOVERNANCE.md).
 
 ## 2. Conformance language
 
@@ -103,7 +103,7 @@ Example: valid and invalid relative paths
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/mcp.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "server": {
       "type": "stdio",
@@ -116,7 +116,7 @@ Example: valid and invalid relative paths
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/mcp.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "server": {
       "type": "stdio",
@@ -168,7 +168,7 @@ my-plugin/
 
 Hosts MUST check for a manifest at `plugin.json` in the plugin root.
 
-The Open Plugin core specification defines exactly one portable manifest per plugin. No other file can replace, supplement, or override the core fields in root `plugin.json`.
+The Agent Plugin core specification defines exactly one portable manifest per plugin. No other file can replace, supplement, or override the core fields in root `plugin.json`.
 
 A host loads and validates root `plugin.json` before discovering components or applying client-specific behavior.
 
@@ -184,15 +184,15 @@ A non-object `extensions` field is handled as defined in §8.1. Every permitted 
 
 The official machine-readable schema is [`schemas/1.0.0/plugin.schema.json`](./schemas/1.0.0/plugin.schema.json). The specification text is authoritative if it conflicts with the schema.
 
-The required `$schema` field identifies the Open Plugin specification version targeted by the plugin and its corresponding manifest schema. For Open Plugin 1.0.0, its value MUST be the canonical identifier `https://open-plugins.com/schemas/1.0.0/plugin.schema.json`.
+The required `$schema` field identifies the Agent Plugin specification version targeted by the plugin and its corresponding manifest schema. For Agent Plugin 1.0.0, its value MUST be the canonical identifier `https://agent-plugins.org/schemas/1.0.0/plugin.schema.json`.
 
-Hosts MUST use a recognized `$schema` value to select locally supported manifest validation and interpretation rules. A host MAY map multiple canonical identifiers to the same implementation only when it explicitly recognizes those Open Plugin versions as compatible. Hosts MUST NOT retrieve a schema while loading a plugin. If a host does not support the declared Open Plugin version or an explicitly recognized compatible version, it MUST reject the plugin and SHOULD report the unsupported version.
+Hosts MUST use a recognized `$schema` value to select locally supported manifest validation and interpretation rules. A host MAY map multiple canonical identifiers to the same implementation only when it explicitly recognizes those Agent Plugin versions as compatible. Hosts MUST NOT retrieve a schema while loading a plugin. If a host does not support the declared Agent Plugin version or an explicitly recognized compatible version, it MUST reject the plugin and SHOULD report the unsupported version.
 
 Example: minimal manifest
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "minimal-plugin"
 }
 ```
@@ -201,7 +201,7 @@ Example: full manifest
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "plugin-name",
   "version": "1.2.0",
   "description": "Brief plugin description",
@@ -304,7 +304,7 @@ If a fixed component location is present but does not resolve to the expected fi
 
 > **See also:** [§6 Component discovery](#6-component-discovery) for how component files are located.
 
-Open Plugin v1 defines exactly two portable component types: **skills** and **MCP servers**. Other capabilities are outside the v1 format and do not affect conformance.
+Agent Plugin v1 defines exactly two portable component types: **skills** and **MCP servers**. Other capabilities are outside the v1 format and do not affect conformance.
 
 Hosts MUST ignore component types they do not support.
 
@@ -332,7 +332,7 @@ skills/
 
 ### 7.2 MCP servers
 
-The [Model Context Protocol specification](https://modelcontextprotocol.io/specification) defines MCP wire behavior and lifecycle semantics. Open Plugin defines the `mcp.json` configuration format used to locate and connect to MCP servers in a plugin. Hosts map this portable format to their native configuration; its field names and values need not match a host-native format.
+The [Model Context Protocol specification](https://modelcontextprotocol.io/specification) defines MCP wire behavior and lifecycle semantics. Agent Plugin defines the `mcp.json` configuration format used to locate and connect to MCP servers in a plugin. Hosts map this portable format to their native configuration; its field names and values need not match a host-native format.
 
 #### 7.2.1 Discovery and configuration
 
@@ -342,9 +342,9 @@ The MCP configuration path is `mcp.json` at the plugin root. MCP configuration M
 
 The official machine-readable schema is [`schemas/1.0.0/mcp.schema.json`](./schemas/1.0.0/mcp.schema.json). The specification text is authoritative if it conflicts with the schema. The schema exposes `#/$defs/server` so that hosts can validate each server independently and preserve the failure boundaries in §7.2.2.
 
-The required `$schema` field identifies the Open Plugin specification version targeted by the MCP configuration and its corresponding MCP schema. For Open Plugin 1.0.0, its value MUST be the canonical identifier `https://open-plugins.com/schemas/1.0.0/mcp.schema.json`.
+The required `$schema` field identifies the Agent Plugin specification version targeted by the MCP configuration and its corresponding MCP schema. For Agent Plugin 1.0.0, its value MUST be the canonical identifier `https://agent-plugins.org/schemas/1.0.0/mcp.schema.json`.
 
-Hosts MUST use a recognized `$schema` value to select locally supported MCP configuration validation and interpretation rules. A host MAY map multiple canonical identifiers to the same implementation only when it explicitly recognizes those Open Plugin versions as compatible. Hosts MUST NOT retrieve a schema while loading a plugin.
+Hosts MUST use a recognized `$schema` value to select locally supported MCP configuration validation and interpretation rules. A host MAY map multiple canonical identifiers to the same implementation only when it explicitly recognizes those Agent Plugin versions as compatible. Hosts MUST NOT retrieve a schema while loading a plugin.
 
 Each server configuration MUST contain a `type` field and match exactly one of the closed variants below. An unknown field, an unknown `type` value, or a field belonging to another variant makes that server entry invalid.
 
@@ -390,17 +390,17 @@ Header names and values MUST be valid HTTP header fields. Header names are case-
 
 Header values are visible package data, not a portable secret mechanism. Plugins MUST NOT embed credentials or other secrets in `headers`. Headers generated by the host to implement HTTP, MCP, or authorization take precedence over configured headers with the same case-insensitive name. A host MUST NOT forward configured headers to a different origin through a redirect or legacy SSE endpoint event without explicit user authorization.
 
-Open Plugin v1 defines no OAuth configuration or portable credential-reference fields. Authorization discovery, user interaction, and credential storage are host-managed. An authorization failure is a connection failure for that server, not invalid plugin configuration.
+Agent Plugin v1 defines no OAuth configuration or portable credential-reference fields. Authorization discovery, user interaction, and credential storage are host-managed. An authorization failure is a connection failure for that server, not invalid plugin configuration.
 
 ##### Transport support
 
-A host that supports Open Plugin MCP servers MUST support both `stdio` and `streamable-http`. Support for `sse` is OPTIONAL. A host MUST use the transport declared by `type` and MUST NOT reinterpret `streamable-http` as legacy HTTP+SSE or automatically fall back to it.
+A host that supports Agent Plugin MCP servers MUST support both `stdio` and `streamable-http`. Support for `sse` is OPTIONAL. A host MUST use the transport declared by `type` and MUST NOT reinterpret `streamable-http` as legacy HTTP+SSE or automatically fall back to it.
 
 Example: `mcp.json`
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/mcp.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "local-validator": {
       "type": "stdio",
@@ -429,7 +429,7 @@ Example: `mcp.json`
 #### 7.2.2 Loading rules
 
 1. Hosts that support MCP servers MUST load configuration only from `mcp.json` at the plugin root.
-2. If `mcp.json` is not valid JSON, targets an Open Plugin version for which the host has no supported or explicitly recognized compatible version, targets a different Open Plugin version than `plugin.json`, or does not satisfy the other top-level requirements in §7.2.1, the host MUST disable MCP for that plugin and continue loading other component types. The host SHOULD report the invalid, unsupported, or mismatched configuration.
+2. If `mcp.json` is not valid JSON, targets an Agent Plugin version for which the host has no supported or explicitly recognized compatible version, targets a different Agent Plugin version than `plugin.json`, or does not satisfy the other top-level requirements in §7.2.1, the host MUST disable MCP for that plugin and continue loading other component types. The host SHOULD report the invalid, unsupported, or mismatched configuration.
 3. If an individual server entry does not satisfy the requirements in §7.2.1, the host MUST skip that server and continue loading other servers and component types. The host SHOULD report the invalid entry.
 4. If the host does not support a valid `sse` entry, it MUST skip that server and continue loading other servers and component types. The host SHOULD report the unsupported transport.
 5. If a server fails to start, connect, authenticate, or complete the MCP handshake, the host MUST continue loading other servers and component types. The host SHOULD report the connection failure.
@@ -440,7 +440,7 @@ Client-specific manifest data MUST be represented under a reverse-domain namespa
 
 A client SHOULD base its namespace on a domain name it controls and SHOULD keep the namespace stable. For example, a client that controls `example.com` could use `com.example.client`.
 
-Open Plugin assigns no portable semantics to client extension data or files. Each client defines the contents and behavior of its own namespace, including how its manifest data and directory contents relate.
+Agent Plugin assigns no portable semantics to client extension data or files. Each client defines the contents and behavior of its own namespace, including how its manifest data and directory contents relate.
 
 ### 8.1 Manifest extension data
 
@@ -450,7 +450,7 @@ Example:
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "example-plugin",
   "extensions": {
     "com.example.client": {
@@ -520,7 +520,7 @@ Example: plugin variable expansion in MCP
 
 ```json
 {
-  "$schema": "https://open-plugins.com/schemas/1.0.0/mcp.schema.json",
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "database": {
       "type": "stdio",
@@ -539,11 +539,11 @@ Example: plugin variable expansion in MCP
 
 ### 10.1 Specification and schema versions
 
-The version in §1 identifies the complete Open Plugin specification release, including its normative text, plugin manifest schema, and MCP configuration schema. Every specification release MUST publish both schemas with the same version as the specification, even when a schema's validation rules are unchanged from the previous release.
+The version in §1 identifies the complete Agent Plugin specification release, including its normative text, plugin manifest schema, and MCP configuration schema. Every specification release MUST publish both schemas with the same version as the specification, even when a schema's validation rules are unchanged from the previous release.
 
-A plugin's required `plugin.json` `$schema` value declares the Open Plugin version that the package targets. When `mcp.json` is present, the version in its `$schema` value MUST match the version declared by `plugin.json`. A mismatch makes the MCP configuration invalid under §7.2.2 but does not invalidate other component types.
+A plugin's required `plugin.json` `$schema` value declares the Agent Plugin version that the package targets. When `mcp.json` is present, the version in its `$schema` value MUST match the version declared by `plugin.json`. A mismatch makes the MCP configuration invalid under §7.2.2 but does not invalidate other component types.
 
-A change to either schema requires a new specification release. Published canonical schema identifiers MUST NOT be reassigned to different schema contents. Existing plugins MAY continue targeting an older Open Plugin version; hosts determine support using the declared canonical identifiers and any explicit compatibility mappings.
+A change to either schema requires a new specification release. Published canonical schema identifiers MUST NOT be reassigned to different schema contents. Existing plugins MAY continue targeting an older Agent Plugin version; hosts determine support using the declared canonical identifiers and any explicit compatibility mappings.
 
 ### 10.2 Plugin versions
 
@@ -641,7 +641,7 @@ Plugins use filesystem directories as the package unit rather than archive forma
 
 ### Why only Agent Skills and MCP in v1?
 
-Open Plugin v1 focuses on Agent Skills and MCP because both have established specifications outside this project and meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
+Agent Plugin v1 focuses on Agent Skills and MCP because both have established specifications outside this project and meaningful cross-host adoption. Other proposed component types — such as commands, hooks, agents, rules, and LSP servers — remain too host-specific for a stable portable contract and are outside portable v1 until their formats converge.
 
 ### Why root-level `plugin.json` is the conformance floor
 
@@ -657,15 +657,15 @@ Reverse-domain identifiers provide a decentralized convention for avoiding colli
 
 ### Why an explicit MCP configuration format?
 
-Existing hosts use incompatible MCP configuration shapes and infer transports differently. Open Plugin therefore defines an explicit closed union whose meaning is independent of any host-native format. Distinguishing Streamable HTTP from legacy HTTP+SSE also prevents an unexpected fallback to the deprecated transport.
+Existing hosts use incompatible MCP configuration shapes and infer transports differently. Agent Plugin therefore defines an explicit closed union whose meaning is independent of any host-native format. Distinguishing Streamable HTTP from legacy HTTP+SSE also prevents an unexpected fallback to the deprecated transport.
 
 ### Why do schemas share the specification version?
 
-`plugin.json` and `mcp.json` schemas use the Open Plugin specification version rather than independent version sequences. This gives plugin authors and hosts one portable format version to understand, prevents mixed-version packages, and lets `$schema` select the complete validation and interpretation contract — including requirements that JSON Schema cannot express. Republishing an unchanged schema with a new specification release is a small maintenance cost compared with exposing three independent compatibility timelines.
+`plugin.json` and `mcp.json` schemas use the Agent Plugin specification version rather than independent version sequences. This gives plugin authors and hosts one portable format version to understand, prevents mixed-version packages, and lets `$schema` select the complete validation and interpretation contract — including requirements that JSON Schema cannot express. Republishing an unchanged schema with a new specification release is a small maintenance cost compared with exposing three independent compatibility timelines.
 
 ### Why plugin variables over relative paths in configs?
 
-MCP server arguments often need absolute paths at runtime. `${PLUGIN_ROOT}` provides an unambiguous, host-resolved anchor for bundled files, while `${PLUGIN_DATA}` identifies host-managed writable state that persists when package contents are replaced during an update. The `command` field does not use interpolation: a `./` path is resolved directly against the plugin root, and a bare name uses the platform's executable search rules. Treating `command` as one token avoids requiring hosts to parse and escape user-authored shell command strings. Hosts differ in inherited environment and `PATH` behavior, so Open Plugin standardizes configured environment overrides but leaves bare-command search host-defined; plugin-relative commands provide deterministic bundled execution.
+MCP server arguments often need absolute paths at runtime. `${PLUGIN_ROOT}` provides an unambiguous, host-resolved anchor for bundled files, while `${PLUGIN_DATA}` identifies host-managed writable state that persists when package contents are replaced during an update. The `command` field does not use interpolation: a `./` path is resolved directly against the plugin root, and a bare name uses the platform's executable search rules. Treating `command` as one token avoids requiring hosts to parse and escape user-authored shell command strings. Hosts differ in inherited environment and `PATH` behavior, so Agent Plugin standardizes configured environment overrides but leaves bare-command search host-defined; plugin-relative commands provide deterministic bundled execution.
 
 ### Why component failures are non-fatal
 
