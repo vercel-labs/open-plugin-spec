@@ -58,6 +58,10 @@
       "additionalProperties": {
         "type": "object"
       }
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Optional human-readable display name. If present, hosts MAY use this in user interfaces instead of `name`. If absent, hosts MUST use `name` as the display name."
     }
   },
   "required": ["$schema", "name"],

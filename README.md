@@ -203,6 +203,7 @@ Example: full manifest
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "plugin-name",
+  "displayName": "Plugin Name",
   "version": "1.2.0",
   "description": "Brief plugin description",
   "author": {
@@ -227,7 +228,7 @@ Example: full manifest
 | Field     | Type   | Description                                                  |
 | --------- | ------ | ------------------------------------------------------------ |
 | `$schema` | string | Canonical plugin manifest schema identifier defined in §5.2. |
-| `name`    | string | Human-readable plugin name.                                  |
+| `name`    | string | Plugin identifier name (see §5.5 constraints).               |
 
 If a required field is missing, has the wrong type, is empty, or otherwise violates its requirements, the manifest is invalid. Hosts MUST reject the plugin and MUST NOT discover or execute any of its components. Hosts SHOULD report which required field is invalid.
 
@@ -242,6 +243,7 @@ If a required field is missing, has the wrong type, is empty, or otherwise viola
 | `repository`  | string   | Source repository URL.                                                |
 | `license`     | string   | License identifier (SPDX identifier RECOMMENDED).                     |
 | `keywords`    | string[] | Search and discovery tags.                                            |
+| `displayName` | string   | Optional human-readable display name.                                 |
 
 The `author` object MAY contain only the `name`, `email`, and `url` fields, each with a string value. Any other field or value type makes the manifest invalid.
 
@@ -267,6 +269,10 @@ Invalid names: `My-Plugin` (uppercase), `-start` (leading hyphen), `has--double`
 ### 5.6 Extensions field
 
 The optional `extensions` field contains client-specific manifest data keyed by extension namespace. See §8 for processing rules.
+
+### 5.7 Display Name field
+
+The optional `displayName` field is a human-readable name for the plugin. If present, it MUST be a string. Hosts MAY use `displayName` in user interfaces instead of `name`. If absent, hosts MUST use `name` as the display name.
 
 ## 6. Component discovery
 
