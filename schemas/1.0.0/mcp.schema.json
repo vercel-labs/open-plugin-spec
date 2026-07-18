@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-plugins.com/schemas/1.0.0/mcp.schema.json",
-  "title": "Open Plugin MCP Configuration",
-  "description": "Machine-readable schema for mcp.json in Open Plugin 1.0.0. The Open Plugin specification defines additional semantic and operational requirements.",
+  "$id": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "title": "Agent Plugin MCP Configuration",
+  "description": "Machine-readable schema for mcp.json in Agent Plugin 1.0.0. The Agent Plugin specification defines additional semantic and operational requirements.",
   "type": "object",
   "properties": {
     "$schema": {
-      "const": "https://open-plugins.com/schemas/1.0.0/mcp.schema.json",
-      "description": "Canonical identifier of the MCP configuration schema for the Open Plugin version targeted by this document."
+      "const": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+      "description": "Canonical identifier of the MCP configuration schema for the Agent Plugin version targeted by this document."
     },
     "mcpServers": {
       "type": "object",
@@ -43,7 +43,7 @@
         "command": {
           "type": "string",
           "minLength": 1,
-          "description": "Executable token. Resolution rules are defined by the Open Plugin specification."
+          "description": "Executable token. Resolution rules are defined by the Agent Plugin specification."
         },
         "args": {
           "type": "array",
@@ -81,7 +81,7 @@
         "url": {
           "type": "string",
           "minLength": 1,
-          "description": "MCP endpoint URL. URL semantics are defined by the Open Plugin specification."
+          "description": "MCP endpoint URL. URL semantics are defined by the Agent Plugin specification."
         },
         "headers": {
           "$ref": "#/$defs/headers"
@@ -100,7 +100,7 @@
         "url": {
           "type": "string",
           "minLength": 1,
-          "description": "MCP endpoint URL. URL semantics are defined by the Open Plugin specification."
+          "description": "MCP endpoint URL. URL semantics are defined by the Agent Plugin specification."
         },
         "headers": {
           "$ref": "#/$defs/headers"

@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
-  "title": "Open Plugin Manifest",
-  "description": "Machine-readable schema for plugin.json in Open Plugin 1.0.0. The Open Plugin specification defines additional semantic and operational requirements.",
+  "$id": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "title": "Agent Plugin Manifest",
+  "description": "Machine-readable schema for plugin.json in Agent Plugin 1.0.0. The Agent Plugin specification defines additional semantic and operational requirements.",
   "type": "object",
   "properties": {
     "$schema": {
-      "const": "https://open-plugins.com/schemas/1.0.0/plugin.schema.json",
-      "description": "Canonical identifier of the plugin manifest schema for the Open Plugin version targeted by this document."
+      "const": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+      "description": "Canonical identifier of the plugin manifest schema for the Agent Plugin version targeted by this document."
     },
     "name": {
       "type": "string",
@@ -54,7 +54,7 @@
     },
     "extensions": {
       "type": "object",
-      "description": "Client-specific manifest data keyed by reverse-domain extension namespace. Open Plugin assigns no semantics to namespace object contents.",
+      "description": "Client-specific manifest data keyed by reverse-domain extension namespace. Agent Plugin assigns no semantics to namespace object contents.",
       "additionalProperties": {
         "type": "object"
       }
