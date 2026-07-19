@@ -2,7 +2,7 @@
 
 ## Purpose and authority
 
-The README defines the current Agent Plugin specification, with schemas providing its machine-readable forms. The specification text is authoritative if it conflicts with a schema. The instructions below describe the design instincts and working practices that should shape proposed changes.
+Versioned files under `spec/` define the Agent Plugin specification, with corresponding schemas under `schemas/` providing its machine-readable forms. The specification text is authoritative if it conflicts with a schema. The instructions below describe the design instincts and working practices that should shape proposed changes.
 
 ## Design posture
 
