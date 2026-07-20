@@ -39,7 +39,7 @@ No single vendor may control a majority of Core Maintainer seats.
 
 The **Technical Steering Committee (TSC)** consists of all Core Maintainers together with the Lead Core Maintainer. The TSC is responsible for all technical oversight of the Project.
 
-The initial list of Core Maintainers and the Lead Core Maintainer shall be recorded in the Project’s CONTRIBUTING file. The TSC may define alternative methods for selecting or rotating voting members, provided such methods are publicly documented.
+The current list of Core Maintainers and the Lead Core Maintainer shall be recorded in the Project’s MAINTAINERS file. The TSC may define alternative methods for selecting or rotating voting members, provided such methods are publicly documented.
 
 TSC meetings are open and may be conducted electronically or in person.
 
