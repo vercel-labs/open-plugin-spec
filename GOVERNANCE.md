@@ -141,8 +141,6 @@ Unless otherwise approved by the TSC:
 - Specification text and documentation are licensed under **Creative Commons Attribution 4.0 (CC-BY-4.0)**
 - Code is licensed under the **Apache 2.0 License**
 
-All code contributions must include a Developer Certificate of Origin (DCO) sign-off.
-
 The TSC may approve alternative licenses for specific Project materials by a two-thirds vote.
 
 ---
